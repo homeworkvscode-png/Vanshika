@@ -12,54 +12,86 @@ const DEFAULT_PASS = "admin123";
 const CLOUD_API_URL = "https://api.restful-api.dev/objects/ff8081819f7e10ae019fecba9c6b1f17";
 
 /**
- * Log a page view for real visitors only (ignores admin visits) & sync to Cloud DB
+ * Log a page view for real visitors & atomically increment Cloud DB stats
  */
 export function trackPageView(pageName) {
   try {
-    const isAdmin =
-      localStorage.getItem("scrapbook_is_admin") === "true" ||
-      sessionStorage.getItem("scrapbook_is_admin") === "true" ||
+    const isExplicitAdminUrl =
       window.location.pathname.toLowerCase().includes("admin") ||
       window.location.search.toLowerCase().includes("admin") ||
       window.location.hash.toLowerCase().includes("admin");
 
-    if (isAdmin) {
+    if (isExplicitAdminUrl) {
       return;
     }
 
-    const stats = getStats();
     const now = new Date().toISOString();
-
-    stats.totalViews = (stats.totalViews || 0) + 1;
-    stats.lastVisit = now;
-
-    if (!stats.firstVisit) stats.firstVisit = now;
-
-    stats.pageBreakdown = stats.pageBreakdown || {};
-    stats.pageBreakdown[pageName] = (stats.pageBreakdown[pageName] || 0) + 1;
-
+    let isNewSession = false;
     let sessionId = sessionStorage.getItem("scrapbook_session_id");
     if (!sessionId) {
       sessionId = "sess_" + Math.random().toString(36).substr(2, 9);
       sessionStorage.setItem("scrapbook_session_id", sessionId);
-      stats.uniqueVisitors = (stats.uniqueVisitors || 0) + 1;
+      isNewSession = true;
     }
 
-    localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(stats));
+    // Update local stats immediately
+    const localStats = getStats();
+    localStats.totalViews = (localStats.totalViews || 0) + 1;
+    if (isNewSession) {
+      localStats.uniqueVisitors = (localStats.uniqueVisitors || 0) + 1;
+    }
+    localStats.lastVisit = now;
+    if (!localStats.firstVisit) localStats.firstVisit = now;
+    localStats.pageBreakdown = localStats.pageBreakdown || {};
+    localStats.pageBreakdown[pageName] = (localStats.pageBreakdown[pageName] || 0) + 1;
+    localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(localStats));
 
-    // Sync visitor stats live to Cloud API
-    syncToCloud(null, stats).catch(() => {});
+    // Async Cloud Increment: fetch latest remote stats, increment, and push to Cloud DB
+    fetch(CLOUD_API_URL)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json) => {
+        const remoteData = json?.data || {};
+        const remoteStats = remoteData.stats || {};
+        const feedbackList = remoteData.feedback || getFeedback();
+
+        const updatedStats = {
+          totalViews: Math.max((remoteStats.totalViews || 0) + 1, localStats.totalViews || 1),
+          uniqueVisitors: isNewSession
+            ? Math.max((remoteStats.uniqueVisitors || 0) + 1, localStats.uniqueVisitors || 1)
+            : Math.max(remoteStats.uniqueVisitors || 1, localStats.uniqueVisitors || 1),
+          firstVisit: remoteStats.firstVisit || localStats.firstVisit || now,
+          lastVisit: now,
+          pageBreakdown: {
+            ...(remoteStats.pageBreakdown || {}),
+            [pageName]: ((remoteStats.pageBreakdown || {})[pageName] || 0) + 1,
+          },
+        };
+
+        localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(updatedStats));
+
+        return fetch(CLOUD_API_URL, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: "vanshika_scrapbook_2026",
+            data: {
+              feedback: feedbackList,
+              stats: updatedStats,
+            },
+          }),
+        });
+      })
+      .catch((err) => console.warn("Cloud analytics increment fallback:", err));
   } catch (err) {
-    console.error("Failed to log page view:", err);
+    console.error("Failed to track page view:", err);
   }
 }
 
 /**
- * Flag browser session as Admin (prevents self-counting)
+ * Flag browser session as Admin
  */
 export function markAsAdmin() {
   try {
-    localStorage.setItem("scrapbook_is_admin", "true");
     sessionStorage.setItem("scrapbook_is_admin", "true");
   } catch {}
 }
