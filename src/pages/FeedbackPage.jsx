@@ -1,7 +1,6 @@
 import { useState } from "react";
 import Button from "../components/Button.jsx";
 import FloatingHearts from "../components/FloatingHearts.jsx";
-import WashiTape from "../components/WashiTape.jsx";
 import { saveFeedback } from "../utils/db.js";
 import {
   FINAL_MESSAGE,
@@ -10,8 +9,6 @@ import {
   FEEDBACK_CONFIRM,
   INSTAGRAM_URL,
   INSTAGRAM_LABEL,
-  CREDITS_TITLE,
-  CREDITS_LIST,
 } from "../content.js";
 
 const RATINGS = ["💖", "🥰", "✨", "💌", "🎉"];
@@ -100,24 +97,6 @@ export default function FeedbackPage({ onReplay }) {
         )}
       </div>
 
-      {CREDITS_LIST && CREDITS_LIST.length > 0 && (
-        <div className="credits-card">
-          <WashiTape color="mint" rotate={-3} width={85} style={{ top: -12, left: "50%", transform: "translateX(-50%)" }} />
-          <h3 className="credits-title">{CREDITS_TITLE}</h3>
-          <div className="credits-grid">
-            {CREDITS_LIST.map((credit, i) => (
-              <div key={i} className="credit-item">
-                <span className="credit-emoji">{credit.emoji}</span>
-                <div className="credit-info">
-                  <span className="credit-role">{credit.role}</span>
-                  <span className="credit-name">{credit.name}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {INSTAGRAM_URL && (
         <a
           href={INSTAGRAM_URL}
@@ -135,6 +114,11 @@ export default function FeedbackPage({ onReplay }) {
           Replay ↺
         </Button>
       </div>
+
+      {/* Simple Plain Text Footer Credits */}
+      <p className="simple-credits">
+        Planned by Kush • Website by Luv • Video by Bharat
+      </p>
     </div>
   );
 }

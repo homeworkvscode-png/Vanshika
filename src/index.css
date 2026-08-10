@@ -1086,6 +1086,17 @@ body {
 .credit-role { font-family: var(--font-body); font-size: 0.72rem; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.04em; }
 .credit-name { font-family: var(--font-hand); font-size: 1.25rem; font-weight: 700; color: var(--rose-dark); }
 
+/* Simple Plain Text Footer Credits */
+.simple-credits {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  margin-top: 1.8rem;
+  opacity: 0.85;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
 /* ==========================================================================
    RESPONSIVE
    ========================================================================== */
