@@ -90,7 +90,7 @@ export const VIDEO_CAPTION = "A special memory for you ✨";
 /* 5. FEEDBACK / FINAL PAGE                                               */
 /* ---------------------------------------------------------------------- */
 export const FINAL_MESSAGE = "Happy Birthday Vanshika";
-export const FINAL_SUBTEXT = "Best wishes on your special day ✨";
+export const FINAL_SUBTEXT = "with all my love — Me ❤️";
 export const FEEDBACK_PROMPT = "Leave a birthday note for Vanshika 💬";
 export const FEEDBACK_CONFIRM = "Thank you ✨";
 
