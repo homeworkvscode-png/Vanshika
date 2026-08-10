@@ -1050,6 +1050,42 @@ body {
   font-size: 1.2rem;
 }
 
+/* Team Credits Card */
+.credits-card {
+  position: relative;
+  background: var(--cream);
+  border-radius: 18px;
+  padding: 1.4rem 1.6rem;
+  margin-top: 1.2rem;
+  width: min(92vw, 400px);
+  box-shadow: 0 16px 36px -16px var(--shadow), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+  text-align: center;
+}
+.credits-title {
+  font-family: var(--font-hand);
+  font-size: 1.4rem;
+  color: var(--rose-dark);
+  margin: 0 0 1rem;
+}
+.credits-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.credit-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  background: #fff;
+  padding: 0.6rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid var(--pink-line);
+}
+.credit-emoji { font-size: 1.3rem; }
+.credit-info { display: flex; flex-direction: column; text-align: left; }
+.credit-role { font-family: var(--font-body); font-size: 0.72rem; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.04em; }
+.credit-name { font-family: var(--font-hand); font-size: 1.25rem; font-weight: 700; color: var(--rose-dark); }
+
 /* ==========================================================================
    RESPONSIVE
    ========================================================================== */

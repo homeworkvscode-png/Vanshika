@@ -78,3 +78,13 @@ export const FEEDBACK_CONFIRM = "Thank you ❤️";
 /* ---------------------------------------------------------------------- */
 export const INSTAGRAM_URL = "https://www.instagram.com/_vanshika_nagariya?igsh=NHhzM3Zwcnozbmdu";
 export const INSTAGRAM_LABEL = "Visit Vanshika's Instagram 📸";
+
+/* ---------------------------------------------------------------------- */
+/* 7. CREDITS / CREATOR SHOUTOUTS                                         */
+/* ---------------------------------------------------------------------- */
+export const CREDITS_TITLE = "Made with love for Vanshika ❤️";
+export const CREDITS_LIST = [
+  { role: "Mastermind & Planning", name: "Kush", emoji: "🧠" },
+  { role: "Website Development", name: "Luv", emoji: "💻" },
+  { role: "Video Editor", name: "Bharat", emoji: "🎬" },
+];
