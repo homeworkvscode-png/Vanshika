@@ -11,12 +11,12 @@ import {
   INSTAGRAM_LABEL,
 } from "../content.js";
 
-const RATINGS = ["💖", "🥰", "✨", "💌", "🎉"];
+const RATINGS = ["🎉", "✨", "💌", "🌸", "⭐"];
 
 export default function FeedbackPage({ onReplay }) {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
-  const [selectedRating, setSelectedRating] = useState("💖");
+  const [selectedRating, setSelectedRating] = useState("🎉");
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e) => {
@@ -36,7 +36,7 @@ export default function FeedbackPage({ onReplay }) {
     <div className="final-wrap">
       <FloatingHearts />
 
-      <h1 className="final-title">{FINAL_MESSAGE} 💖</h1>
+      <h1 className="final-title">{FINAL_MESSAGE} 🎉</h1>
       <p className="final-subtext">{FINAL_SUBTEXT}</p>
 
       <div className="feedback-card">
@@ -82,7 +82,7 @@ export default function FeedbackPage({ onReplay }) {
               rows={4}
             />
 
-            <Button type="submit">Send Note ❤️</Button>
+            <Button type="submit">Send Note ✨</Button>
           </form>
         ) : (
           <div className="feedback-confirm" role="status">

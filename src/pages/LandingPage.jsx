@@ -11,7 +11,7 @@ export default function LandingPage({ onNext }) {
       <Sticker emoji="✨" rotate={10} size={26} style={{ top: 10, right: 14 }} />
       <Sticker emoji="🎀" rotate={-12} size={30} style={{ bottom: 14, left: 12 }} />
 
-      <div className="cover-heart">💗</div>
+      <div className="cover-heart">🎂</div>
       <h1 className="cover-title">{LANDING_TITLE}</h1>
       <p className="cover-subtext">{LANDING_SUBTEXT}</p>
 

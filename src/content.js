@@ -5,23 +5,29 @@
  */
 
 export const RECIPIENT_NAME = "Vanshika";
-export const SENDER_NAME = "Me";
+export const SENDER_NAME = "Friends";
 
 /* ---------------------------------------------------------------------- */
 /* 1. LANDING PAGE                                                        */
 /* ---------------------------------------------------------------------- */
-export const LANDING_TITLE = "Happy Birthday Vanshika ❤️";
+export const LANDING_TITLE = "Happy Birthday Vanshika 🎉";
 export const LANDING_SUBTEXT = "open this when you have a quiet minute ✨";
 export const LANDING_BUTTON = "Open it →";
 
-/* ---------------------------------------------------------------------- */
-/* LETTER PAGE                                                            */
-/* ---------------------------------------------------------------------- */
+export const LETTER_TITLE = "Just a Little Something 💌";
+
 export const LETTER_BODY = [
-  `Dear ${RECIPIENT_NAME},`,
-  "I kept starting this letter over, because nothing sounded like enough. So I stopped trying to make it perfect and just started telling the truth.",
-  "You make ordinary days feel like they're worth remembering. I hope this year hands you back a little of what you give everyone else.",
-  "Happy birthday — I'm so glad you exist.",
+  "Piya,",
+  "Mujhe yaad hai jab main Garmiyon ki chhutti mein apni Masi ke ghar aaya karta tha. Masi ke ghar jaane se zyada mujhe tumhare aur Vansh ke saath rehne mein maza aata tha.",
+  "Phir itne saal hogye gaye, tumhare ghar aana bhi almost band ho gaya.",
+  "But,",
+  "phir itne saalon baad tumhe Sunny Bhaiya ki shaadi mein dekha.",
+  "Honestly, us moment ko explain karna thoda mushkil hai, toh usko side mein hi rakhte hain. 😂",
+  "Aaj tumhara birthday hai,\nAaj ka din bas enjoy karo, smile karo, aur mast raho. ✨",
+  "Bas ek chota sa gift hai tumhare liye.\nI know, it's probably not as good as it could have been, but time bhi thoda kam tha aur photos bhi zyada nahi thi. 😭😂",
+  "But phir bhi, socha ki is baar sirf “Happy Birthday” text karke nikal jaane se thoda zyada effort kiya jaye.",
+  "So yeah… Happy Birthday, Piya! 🎂✨",
+  "Hope you have an amazing day.\nEnjoy your day! 🤍",
 ];
 
 /* ---------------------------------------------------------------------- */
@@ -78,15 +84,15 @@ const scannedVideos = Object.keys(videoGlob);
 export const VIDEO_SRC = scannedVideos.length > 0
   ? scannedVideos[0].replace("/public", "")
   : "/videos/video1.mp4";
-export const VIDEO_CAPTION = "A small memory for you 💖";
+export const VIDEO_CAPTION = "A special memory for you ✨";
 
 /* ---------------------------------------------------------------------- */
 /* 5. FEEDBACK / FINAL PAGE                                               */
 /* ---------------------------------------------------------------------- */
-export const FINAL_MESSAGE = "Happy Birthday";
-export const FINAL_SUBTEXT = `with all my love — ${SENDER_NAME}`;
-export const FEEDBACK_PROMPT = "loved this? tell me what you think";
-export const FEEDBACK_CONFIRM = "Thank you ❤️";
+export const FINAL_MESSAGE = "Happy Birthday Vanshika";
+export const FINAL_SUBTEXT = "Best wishes on your special day ✨";
+export const FEEDBACK_PROMPT = "Leave a birthday note for Vanshika 💬";
+export const FEEDBACK_CONFIRM = "Thank you ✨";
 
 /* ---------------------------------------------------------------------- */
 /* 6. INSTAGRAM PROFILE                                                   */
@@ -97,7 +103,7 @@ export const INSTAGRAM_LABEL = "Visit Vanshika's Instagram 📸";
 /* ---------------------------------------------------------------------- */
 /* 7. CREDITS / CREATOR SHOUTOUTS                                         */
 /* ---------------------------------------------------------------------- */
-export const CREDITS_TITLE = "Made with love for Vanshika ❤️";
+export const CREDITS_TITLE = "Created for Vanshika's Birthday ✨";
 export const CREDITS_LIST = [
   { role: "Mastermind & Planning", name: "Kush", emoji: "🧠" },
   { role: "Website Development", name: "Luv", emoji: "💻" },

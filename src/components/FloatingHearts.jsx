@@ -1,13 +1,12 @@
 import { useMemo } from "react";
 
-const EMOJIS = ["💖", "💕", "💗", "✨"];
+const EMOJIS = ["✨", "⭐", "🎉", "🌸", "🌷", "✨"];
 
 /**
- * A field of hearts drifting upward and fading out, looped via CSS.
- * Randomized once per mount (useMemo) so it doesn't reshuffle on re-render.
+ * A field of celebratory stars and sparkles drifting upward.
  */
 export default function FloatingHearts({ count = 22 }) {
-  const hearts = useMemo(
+  const elements = useMemo(
     () =>
       Array.from({ length: count }, (_, i) => ({
         id: i,
@@ -23,7 +22,7 @@ export default function FloatingHearts({ count = 22 }) {
 
   return (
     <div className="hearts-field" aria-hidden="true">
-      {hearts.map((h) => (
+      {elements.map((h) => (
         <span
           key={h.id}
           className="floating-heart"
