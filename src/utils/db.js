@@ -116,7 +116,6 @@ export async function syncCloudFeedback() {
     const remoteList = json?.data?.feedback || [];
     const localList = getFeedback();
 
-    // Merge remote and local by unique id
     const map = new Map();
     [...remoteList, ...localList].forEach((item) => {
       if (item && item.id) {
@@ -197,6 +196,19 @@ export function resetStats() {
 export function clearAllFeedback() {
   localStorage.removeItem(FEEDBACK_STORAGE_KEY);
   syncToCloud([]).catch(() => {});
+}
+
+/**
+ * Reset ALL stored admin data (clears both visitor analytics AND feedback notes)
+ */
+export function resetAllAdminData() {
+  try {
+    localStorage.removeItem(STATS_STORAGE_KEY);
+    localStorage.removeItem(FEEDBACK_STORAGE_KEY);
+    syncToCloud([]).catch(() => {});
+  } catch (err) {
+    console.error("Failed to reset all data:", err);
+  }
 }
 
 /**

@@ -6,6 +6,7 @@ import {
   setAdminPassword,
   clearAllFeedback,
   resetStats,
+  resetAllAdminData,
   syncCloudFeedback,
 } from "../utils/db.js";
 
@@ -71,6 +72,17 @@ export default function AdminModal({ isOpen, onClose }) {
   const handleResetStats = () => {
     if (window.confirm("Are you sure you want to reset visitor analytics counts?")) {
       resetStats();
+      refreshData();
+    }
+  };
+
+  const handleResetAllData = () => {
+    if (
+      window.confirm(
+        "⚠️ DANGER ZONE: Are you sure you want to RESET ALL ADMIN DATA? This will wipe both Visitor Analytics AND Feedback Notes!"
+      )
+    ) {
+      resetAllAdminData();
       refreshData();
     }
   };
@@ -223,16 +235,19 @@ export default function AdminModal({ isOpen, onClose }) {
 
                   <hr className="admin-divider" />
 
-                  <h3>📥 Data Management</h3>
+                  <h3>📥 Data Management & Reset</h3>
                   <div className="admin-actions">
                     <button onClick={exportJSON} className="admin-btn admin-btn--ghost">
                       Export Data to JSON 📄
                     </button>
                     <button onClick={handleResetStats} className="admin-btn admin-btn--ghost">
-                      Reset Visitor Analytics 🔄
+                      Reset Visitor Analytics 📊
                     </button>
-                    <button onClick={handleClear} className="admin-btn admin-btn--danger">
-                      Clear Feedback DB 🗑️
+                    <button onClick={handleClear} className="admin-btn admin-btn--ghost">
+                      Clear Feedback DB 💌
+                    </button>
+                    <button onClick={handleResetAllData} className="admin-btn admin-btn--danger">
+                      Reset ALL Admin Data 🚨
                     </button>
                   </div>
                 </div>
