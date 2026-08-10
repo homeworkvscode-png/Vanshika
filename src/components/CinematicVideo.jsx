@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 /**
- * Fullscreen "cinema" video experience with YouTube-style Ambient Lighting (Dolby Glow Effect).
- * Automatically syncs a blurred background glow with real-time video colors!
+ * Fullscreen "cinema" video experience with YouTube-style Ambient Lighting (Dolby Glow Effect),
+ * auto-play on phone rotation to landscape, and pre-buffered instant loading!
  */
 export default function CinematicVideo({ src, caption, onFinished, onCinematicChange }) {
   const videoRef = useRef(null);
@@ -11,6 +11,33 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
   const [muted, setMuted] = useState(false); // Audio ON by default
   const [ended, setEnded] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isPortrait, setIsPortrait] = useState(false);
+  const [dismissRotate, setDismissRotate] = useState(false);
+
+  // Check & monitor device orientation
+  useEffect(() => {
+    const handleOrientation = () => {
+      const portrait = window.innerHeight > window.innerWidth && window.innerWidth <= 768;
+      setIsPortrait(portrait);
+
+      // Auto-play video when rotated to landscape
+      if (!portrait && videoRef.current) {
+        const v = videoRef.current;
+        v.play().catch(() => {});
+        if (ambientRef.current) ambientRef.current.play().catch(() => {});
+      }
+    };
+
+    handleOrientation();
+    window.addEventListener("resize", handleOrientation);
+    window.addEventListener("orientationchange", handleOrientation);
+
+    return () => {
+      window.removeEventListener("resize", handleOrientation);
+      window.removeEventListener("orientationchange", handleOrientation);
+    };
+  }, []);
 
   useEffect(() => {
     onCinematicChange?.(true);
@@ -27,17 +54,21 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
     v.muted = false;
     v.play()
       .then(() => {
+        setLoading(false);
         if (amb) amb.play().catch(() => {});
       })
       .catch(() => {
         v.muted = true;
         setMuted(true);
-        v.play().catch(() => {});
+        v.play()
+          .then(() => setLoading(false))
+          .catch(() => setLoading(false));
         if (amb) amb.play().catch(() => {});
       });
   }, [failed, src]);
 
   const handlePlay = () => {
+    setLoading(false);
     ambientRef.current?.play().catch(() => {});
   };
 
@@ -69,6 +100,21 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
       <div className="cinema-vignette cinema-vignette--left" aria-hidden="true" />
       <div className="cinema-vignette cinema-vignette--right" aria-hidden="true" />
 
+      {/* Rotation hint prompt for video page */}
+      {isPortrait && !dismissRotate && (
+        <div className="cinema-rotate-hint" role="alert">
+          <span className="rotate-phone-icon">📱</span>
+          <span>Rotate phone to <strong>Landscape</strong> for full screen movie! 🔄</span>
+          <button
+            type="button"
+            className="cinema-rotate-close"
+            onClick={() => setDismissRotate(true)}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       <div className="cinema-controls">
         <button
           type="button"
@@ -84,7 +130,15 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
       </div>
 
       <div className="cinema-video-wrap">
-        {/* Real-time YouTube-style Ambient Glow Background */}
+        {/* Loading Spinner */}
+        {loading && !failed && (
+          <div className="video-loading-spinner">
+            <span className="spinner-icon">✨</span>
+            <p>Loading video...</p>
+          </div>
+        )}
+
+        {/* YouTube Ambient Glow Background */}
         {src && !failed && (
           <video
             ref={ambientRef}
@@ -107,6 +161,7 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
             preload="auto"
             muted={muted}
             playsInline
+            onCanPlay={() => setLoading(false)}
             onPlay={handlePlay}
             onPause={handlePause}
             onTimeUpdate={handleTimeUpdate}
@@ -114,7 +169,10 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
               setEnded(true);
               ambientRef.current?.pause();
             }}
-            onError={() => setFailed(true)}
+            onError={() => {
+              setFailed(true);
+              setLoading(false);
+            }}
           />
         ) : (
           <div className="cinema-video-fallback">
