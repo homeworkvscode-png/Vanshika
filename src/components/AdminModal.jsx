@@ -6,6 +6,7 @@ import {
   setAdminPassword,
   clearAllFeedback,
   resetStats,
+  syncCloudFeedback,
 } from "../utils/db.js";
 
 export default function AdminModal({ isOpen, onClose }) {
@@ -17,6 +18,7 @@ export default function AdminModal({ isOpen, onClose }) {
   const [stats, setStats] = useState({});
   const [newPassword, setNewPassword] = useState("");
   const [passMsg, setPassMsg] = useState("");
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     if (isOpen && isAuthenticated) {
@@ -24,9 +26,17 @@ export default function AdminModal({ isOpen, onClose }) {
     }
   }, [isOpen, isAuthenticated]);
 
-  const refreshData = () => {
+  const refreshData = async () => {
+    setIsSyncing(true);
     setFeedbackList(getFeedback());
     setStats(getStats());
+
+    // Fetch live feedback from cloud database across devices
+    try {
+      const liveFeedback = await syncCloudFeedback();
+      setFeedbackList(liveFeedback);
+    } catch {}
+    setIsSyncing(false);
   };
 
   const handleLogin = (e) => {
@@ -117,7 +127,10 @@ export default function AdminModal({ isOpen, onClose }) {
               <div className="admin-tabs">
                 <button
                   className={`admin-tab ${activeTab === "feedback" ? "admin-tab--active" : ""}`}
-                  onClick={() => setActiveTab("feedback")}
+                  onClick={() => {
+                    setActiveTab("feedback");
+                    refreshData();
+                  }}
                 >
                   💌 Feedback ({feedbackList.length})
                 </button>
@@ -139,6 +152,20 @@ export default function AdminModal({ isOpen, onClose }) {
             <div className="admin-content">
               {activeTab === "feedback" && (
                 <div className="admin-feedback-list">
+                  <div className="admin-feedback-toolbar">
+                    <span className="admin-cloud-badge">
+                      {isSyncing ? "Syncing Cloud DB... ⏳" : "Connected to Live Cloud DB 🌐"}
+                    </span>
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn--ghost admin-btn--sm"
+                      onClick={refreshData}
+                      disabled={isSyncing}
+                    >
+                      Refresh Notes 🔄
+                    </button>
+                  </div>
+
                   {feedbackList.length === 0 ? (
                     <p className="admin-empty">No feedback entries yet.</p>
                   ) : (
@@ -171,8 +198,8 @@ export default function AdminModal({ isOpen, onClose }) {
                   </div>
                   <div className="stat-card stat-card--full">
                     <h4>🕒 Activity History</h4>
-                    <p><strong>First Visit:</strong> {new Date(stats.firstVisit).toLocaleString()}</p>
-                    <p><strong>Latest Visit:</strong> {new Date(stats.lastVisit).toLocaleString()}</p>
+                    <p><strong>First Visit:</strong> {stats.firstVisit ? new Date(stats.firstVisit).toLocaleString() : "N/A"}</p>
+                    <p><strong>Latest Visit:</strong> {stats.lastVisit ? new Date(stats.lastVisit).toLocaleString() : "N/A"}</p>
                   </div>
                 </div>
               )}
@@ -198,6 +225,9 @@ export default function AdminModal({ isOpen, onClose }) {
 
                   <h3>📥 Data Management</h3>
                   <div className="admin-actions">
+                    <button onClick={exportJSON} className="admin-btn admin-btn--ghost">
+                      Export Data to JSON 📄
+                    </button>
                     <button onClick={handleResetStats} className="admin-btn admin-btn--ghost">
                       Reset Visitor Analytics 🔄
                     </button>

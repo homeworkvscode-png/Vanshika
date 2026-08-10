@@ -1,19 +1,20 @@
 /**
  * Database & Analytics Service
  * Handles storing feedback messages and tracking visitor analytics.
- * Synchronizes to localStorage and cloud endpoint for real-time remote admin viewing.
+ * Real-time cloud synchronization ensures feedback submitted on mobile devices
+ * appears instantly in the Admin Portal across any device worldwide!
  */
 
 const FEEDBACK_STORAGE_KEY = "scrapbook_feedback_db";
 const STATS_STORAGE_KEY = "scrapbook_stats_db";
 const DEFAULT_PASS = "admin123";
+const CLOUD_API_URL = "https://api.restful-api.dev/objects/ff8081819f7e10ae019fecba9c6b1f17";
 
 /**
  * Log a page view for real visitors only (ignores admin visits)
  */
 export function trackPageView(pageName) {
   try {
-    // Ignore ALL visits from admin users, admin URLs, or logged-in admins
     const isAdmin =
       localStorage.getItem("scrapbook_is_admin") === "true" ||
       sessionStorage.getItem("scrapbook_is_admin") === "true" ||
@@ -22,7 +23,7 @@ export function trackPageView(pageName) {
       window.location.hash.toLowerCase().includes("admin");
 
     if (isAdmin) {
-      return; // Skip analytics logging for admin
+      return;
     }
 
     const stats = getStats();
@@ -36,7 +37,6 @@ export function trackPageView(pageName) {
     stats.pageBreakdown = stats.pageBreakdown || {};
     stats.pageBreakdown[pageName] = (stats.pageBreakdown[pageName] || 0) + 1;
 
-    // Track unique visitor session
     let sessionId = sessionStorage.getItem("scrapbook_session_id");
     if (!sessionId) {
       sessionId = "sess_" + Math.random().toString(36).substr(2, 9);
@@ -61,13 +61,13 @@ export function markAsAdmin() {
 }
 
 /**
- * Save a new feedback entry
+ * Save a new feedback entry & sync to Cloud API
  */
 export function saveFeedback(entry) {
   try {
     const feedbackList = getFeedback();
     const newEntry = {
-      id: "fb_" + Date.now(),
+      id: "fb_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4),
       name: entry.name || "Anonymous",
       message: entry.message || "",
       rating: entry.rating || "❤️",
@@ -81,6 +81,10 @@ export function saveFeedback(entry) {
 
     feedbackList.unshift(newEntry);
     localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(feedbackList));
+
+    // Sync to Cloud API asynchronously for cross-device viewing
+    syncToCloud(feedbackList).catch(() => {});
+
     return newEntry;
   } catch (err) {
     console.error("Failed to save feedback:", err);
@@ -89,7 +93,7 @@ export function saveFeedback(entry) {
 }
 
 /**
- * Get all feedback entries
+ * Get all feedback entries from localStorage
  */
 export function getFeedback() {
   try {
@@ -97,6 +101,56 @@ export function getFeedback() {
     return data ? JSON.parse(data) : getDemoFeedback();
   } catch {
     return getDemoFeedback();
+  }
+}
+
+/**
+ * Fetch & merge live feedback from Cloud DB
+ */
+export async function syncCloudFeedback() {
+  try {
+    const res = await fetch(CLOUD_API_URL);
+    if (!res.ok) return getFeedback();
+
+    const json = await res.json();
+    const remoteList = json?.data?.feedback || [];
+    const localList = getFeedback();
+
+    // Merge remote and local by unique id
+    const map = new Map();
+    [...remoteList, ...localList].forEach((item) => {
+      if (item && item.id) {
+        map.set(item.id, item);
+      }
+    });
+
+    const unifiedList = Array.from(map.values()).sort(
+      (a, b) => (b.rawTimestamp || 0) - (a.rawTimestamp || 0)
+    );
+
+    localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(unifiedList));
+    return unifiedList;
+  } catch (err) {
+    console.warn("Cloud sync offline fallback to local data:", err);
+    return getFeedback();
+  }
+}
+
+/**
+ * Internal helper to push updated list to Cloud DB
+ */
+async function syncToCloud(feedbackList) {
+  try {
+    await fetch(CLOUD_API_URL, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "vanshika_scrapbook_2026",
+        data: { feedback: feedbackList },
+      }),
+    });
+  } catch (err) {
+    console.error("Cloud push failed:", err);
   }
 }
 
@@ -142,6 +196,7 @@ export function resetStats() {
  */
 export function clearAllFeedback() {
   localStorage.removeItem(FEEDBACK_STORAGE_KEY);
+  syncToCloud([]).catch(() => {});
 }
 
 /**

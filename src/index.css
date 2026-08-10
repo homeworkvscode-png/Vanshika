@@ -1180,6 +1180,29 @@ body {
 }
 .admin-tab--active { background: var(--rose); color: #fff; }
 
+/* Admin Cloud Sync Toolbar */
+.admin-feedback-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  background: var(--cream);
+  padding: 0.5rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--pink-line);
+  margin-bottom: 0.6rem;
+}
+.admin-cloud-badge {
+  font-family: var(--font-body);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--rose-dark);
+}
+.admin-btn--sm {
+  padding: 0.35rem 0.8rem;
+  font-size: 0.78rem;
+}
+
 /* Admin Cards */
 .admin-feedback-list { display: flex; flex-direction: column; gap: 0.9rem; }
 .admin-feedback-card {
