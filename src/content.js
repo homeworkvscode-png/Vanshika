@@ -72,3 +72,9 @@ export const FINAL_MESSAGE = "Happy Birthday";
 export const FINAL_SUBTEXT = `with all my love — ${SENDER_NAME}`;
 export const FEEDBACK_PROMPT = "loved this? tell me what you think";
 export const FEEDBACK_CONFIRM = "Thank you ❤️";
+
+/* ---------------------------------------------------------------------- */
+/* 6. INSTAGRAM PROFILE                                                   */
+/* ---------------------------------------------------------------------- */
+export const INSTAGRAM_URL = "https://instagram.com/"; // Change to Vanshika's exact handle if needed
+export const INSTAGRAM_LABEL = "Visit Vanshika's Instagram 📸";

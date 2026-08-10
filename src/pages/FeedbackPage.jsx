@@ -2,7 +2,14 @@ import { useState } from "react";
 import Button from "../components/Button.jsx";
 import FloatingHearts from "../components/FloatingHearts.jsx";
 import { saveFeedback } from "../utils/db.js";
-import { FINAL_MESSAGE, FINAL_SUBTEXT, FEEDBACK_PROMPT, FEEDBACK_CONFIRM } from "../content.js";
+import {
+  FINAL_MESSAGE,
+  FINAL_SUBTEXT,
+  FEEDBACK_PROMPT,
+  FEEDBACK_CONFIRM,
+  INSTAGRAM_URL,
+  INSTAGRAM_LABEL,
+} from "../content.js";
 
 const RATINGS = ["💖", "🥰", "✨", "💌", "🎉"];
 
@@ -90,9 +97,23 @@ export default function FeedbackPage({ onReplay }) {
         )}
       </div>
 
-      <Button variant="ghost" onClick={onReplay}>
-        Replay ↺
-      </Button>
+      {INSTAGRAM_URL && (
+        <a
+          href={INSTAGRAM_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="insta-btn"
+        >
+          <span className="insta-icon">📸</span>
+          <span>{INSTAGRAM_LABEL || "Visit Instagram Profile"}</span>
+        </a>
+      )}
+
+      <div style={{ marginTop: "1rem" }}>
+        <Button variant="ghost" onClick={onReplay}>
+          Replay ↺
+        </Button>
+      </div>
     </div>
   );
 }
