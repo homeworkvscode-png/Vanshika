@@ -5,8 +5,8 @@ import WashiTape from "../components/WashiTape.jsx";
 import Sticker from "../components/Sticker.jsx";
 import { COLLAGE_KICKER, COLLAGE_HINT, COLLAGE_ITEMS } from "../content.js";
 
-const ROTATIONS = [-6, 5, -4, 6, -5, 4];
-const TAPES = ["lilac", "yellow", "mint", "pink"];
+// Clean, subtle polaroid tilts that look organized and beautiful on all screens
+const ROTATIONS = [-1.5, 1.5, -1, 1.8, -1.2, 1.5];
 
 export default function CollagePage({ onNext }) {
   const [openIndex, setOpenIndex] = useState(null);
@@ -14,19 +14,19 @@ export default function CollagePage({ onNext }) {
 
   return (
     <div className="collage-wrap">
-      <WashiTape color="lilac" rotate={-8} width={90} style={{ top: -18, left: "10%" }} />
-      <WashiTape color="yellow" rotate={6} width={80} style={{ top: -16, right: "12%" }} />
-      <Sticker emoji="📌" rotate={-10} size={24} style={{ top: -6, right: "4%" }} />
-      <Sticker emoji="✨" rotate={12} size={26} style={{ top: -6, left: "4%" }} />
+      <WashiTape color="lilac" rotate={-4} width={85} style={{ top: -14, left: "8%" }} />
+      <WashiTape color="yellow" rotate={5} width={75} style={{ top: -12, right: "10%" }} />
+      <Sticker emoji="📌" rotate={-8} size={24} style={{ top: -4, right: "2%" }} />
+      <Sticker emoji="✨" rotate={10} size={24} style={{ top: -4, left: "2%" }} />
 
       <p className="kicker">{COLLAGE_KICKER}</p>
 
-      <div className="gallery-grid">
+      <div className="collage-clean-grid">
         {COLLAGE_ITEMS.map((item, i) => (
           <button
             key={item.src}
             type="button"
-            className="gallery-item polaroid-card"
+            className="collage-card"
             style={{
               transform: `rotate(${ROTATIONS[i % ROTATIONS.length]}deg)`,
               animationDelay: `${i * 0.08}s`,
@@ -34,28 +34,21 @@ export default function CollagePage({ onNext }) {
             onClick={() => setOpenIndex(i)}
             aria-label={`Open photo: ${item.caption || "photo " + (i + 1)}`}
           >
-            {i % 2 === 0 && (
-              <WashiTape
-                color={TAPES[i % TAPES.length]}
-                rotate={i % 4 === 0 ? -5 : 5}
-                width={55}
-                style={{ top: -8, left: "50%", transform: "translateX(-50%)" }}
-              />
-            )}
-
-            {!failed[i] ? (
-              <img
-                src={item.src}
-                alt={item.caption || ""}
-                loading="lazy"
-                onError={() => setFailed((f) => ({ ...f, [i]: true }))}
-              />
-            ) : (
-              <div className="gallery-fallback" aria-hidden="true">
-                <span>🖼️</span>
-              </div>
-            )}
-            {item.caption && <span className="polaroid-caption">{item.caption}</span>}
+            <div className="collage-photo-frame">
+              {!failed[i] ? (
+                <img
+                  src={item.src}
+                  alt={item.caption || ""}
+                  loading="lazy"
+                  onError={() => setFailed((f) => ({ ...f, [i]: true }))}
+                />
+              ) : (
+                <div className="gallery-fallback" aria-hidden="true">
+                  <span>🖼️</span>
+                </div>
+              )}
+            </div>
+            {item.caption && <span className="collage-caption">{item.caption}</span>}
           </button>
         ))}
       </div>
