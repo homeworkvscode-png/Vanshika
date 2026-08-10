@@ -25,14 +25,24 @@ export default function App() {
   const [showAdmin, setShowAdmin] = useState(false);
 
   useEffect(() => {
-    // Access admin page ONLY via URL: /admin or ?admin=true or #admin
-    const path = window.location.pathname.toLowerCase();
-    const search = window.location.search.toLowerCase();
-    const hash = window.location.hash.toLowerCase();
+    const checkAdmin = () => {
+      const path = window.location.pathname.toLowerCase();
+      const search = window.location.search.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
 
-    if (path.includes("admin") || search.includes("admin") || hash.includes("admin")) {
-      setShowAdmin(true);
-    }
+      if (path.includes("admin") || search.includes("admin") || hash.includes("admin")) {
+        setShowAdmin(true);
+      }
+    };
+
+    checkAdmin();
+    window.addEventListener("hashchange", checkAdmin);
+    window.addEventListener("popstate", checkAdmin);
+
+    return () => {
+      window.removeEventListener("hashchange", checkAdmin);
+      window.removeEventListener("popstate", checkAdmin);
+    };
   }, []);
 
   useEffect(() => {
@@ -71,14 +81,12 @@ export default function App() {
       )}
       {showChrome && <PageDots count={PAGE_COUNT} activeIndex={pageIndex} onSelect={goTo} />}
 
-      {/* Admin Portal rendered ONLY when accessing via URL (/admin, ?admin=true, #admin) */}
       <AdminModal
         isOpen={showAdmin}
         onClose={() => {
           setShowAdmin(false);
-          // Clean up URL parameter if desired
           if (window.history.pushState) {
-            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            const cleanUrl = window.location.protocol + "//" + window.location.host + "/";
             window.history.pushState({ path: cleanUrl }, "", cleanUrl);
           }
         }}
