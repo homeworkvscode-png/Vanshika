@@ -9,7 +9,9 @@ const FEEDBACK_STORAGE_KEY = "scrapbook_feedback_db";
 const STATS_STORAGE_KEY = "scrapbook_stats_db";
 const INITIALIZED_KEY = "scrapbook_initialized";
 const DEFAULT_PASS = "admin123";
-const CLOUD_API_URL = "https://api.restful-api.dev/objects/ff8081819f7e10ae019fecba9c6b1f17";
+
+// Unlimited, real-time Cloud KV DB Endpoint
+const CLOUD_API_URL = "https://jsonblob.com/api/jsonBlob/019fecef-f72e-773b-af7f-6a6c732b1fb0";
 
 /**
  * Log a page view for real visitors & atomically increment Cloud DB stats
@@ -49,10 +51,9 @@ export function trackPageView(pageName) {
     // Async Cloud Increment: fetch latest remote stats, increment, and push to Cloud DB
     fetch(CLOUD_API_URL)
       .then((res) => (res.ok ? res.json() : null))
-      .then((json) => {
-        const remoteData = json?.data || {};
-        const remoteStats = remoteData.stats || {};
-        const feedbackList = remoteData.feedback || getFeedback();
+      .then((remoteData) => {
+        const remoteStats = remoteData?.stats || {};
+        const feedbackList = remoteData?.feedback || getFeedback();
 
         const updatedStats = {
           totalViews: Math.max((remoteStats.totalViews || 0) + 1, localStats.totalViews || 1),
@@ -73,11 +74,8 @@ export function trackPageView(pageName) {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: "vanshika_scrapbook_2026",
-            data: {
-              feedback: feedbackList,
-              stats: updatedStats,
-            },
+            feedback: feedbackList,
+            stats: updatedStats,
           }),
         });
       })
@@ -171,9 +169,9 @@ export async function syncCloudData() {
     const res = await fetch(CLOUD_API_URL);
     if (!res.ok) return { feedback: getFeedback(), stats: getStats() };
 
-    const json = await res.json();
-    const remoteList = json?.data?.feedback || [];
-    const remoteStats = json?.data?.stats || null;
+    const data = await res.json();
+    const remoteList = data?.feedback || [];
+    const remoteStats = data?.stats || null;
     const localList = getFeedback();
     const localStats = getStats();
 
@@ -224,11 +222,8 @@ async function syncToCloud(feedbackList, statsObj) {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: "vanshika_scrapbook_2026",
-        data: {
-          feedback: listToPush,
-          stats: statsToPush,
-        },
+        feedback: listToPush,
+        stats: statsToPush,
       }),
     });
   } catch (err) {
