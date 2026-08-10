@@ -2,11 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 /**
- * Fullscreen "cinema" video experience. Portaled straight into <body> so it
- * always covers the true viewport. Plays instantly without delay in full size!
+ * Fullscreen "cinema" video experience with YouTube-style Ambient Lighting (Dolby Glow Effect).
+ * Automatically syncs a blurred background glow with real-time video colors!
  */
 export default function CinematicVideo({ src, caption, onFinished, onCinematicChange }) {
   const videoRef = useRef(null);
+  const ambientRef = useRef(null);
   const [muted, setMuted] = useState(false); // Audio ON by default
   const [ended, setEnded] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -20,16 +21,38 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
 
   useEffect(() => {
     const v = videoRef.current;
+    const amb = ambientRef.current;
     if (!v || failed || !src) return;
 
     v.muted = false;
-    v.play().catch(() => {
-      // Fallback if browser requires user click for unmuted autoplay
-      v.muted = true;
-      setMuted(true);
-      v.play().catch(() => {});
-    });
+    v.play()
+      .then(() => {
+        if (amb) amb.play().catch(() => {});
+      })
+      .catch(() => {
+        v.muted = true;
+        setMuted(true);
+        v.play().catch(() => {});
+        if (amb) amb.play().catch(() => {});
+      });
   }, [failed, src]);
+
+  const handlePlay = () => {
+    ambientRef.current?.play().catch(() => {});
+  };
+
+  const handlePause = () => {
+    ambientRef.current?.pause();
+  };
+
+  const handleTimeUpdate = () => {
+    if (videoRef.current && ambientRef.current) {
+      const diff = Math.abs(ambientRef.current.currentTime - videoRef.current.currentTime);
+      if (diff > 0.2) {
+        ambientRef.current.currentTime = videoRef.current.currentTime;
+      }
+    }
+  };
 
   const toggleMute = () => {
     setMuted((m) => {
@@ -61,6 +84,20 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
       </div>
 
       <div className="cinema-video-wrap">
+        {/* Real-time YouTube-style Ambient Glow Background */}
+        {src && !failed && (
+          <video
+            ref={ambientRef}
+            className="cinema-ambient-bg"
+            src={src}
+            autoPlay
+            muted
+            loop
+            playsInline
+            aria-hidden="true"
+          />
+        )}
+
         {src && !failed ? (
           <video
             ref={videoRef}
@@ -70,7 +107,13 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
             preload="auto"
             muted={muted}
             playsInline
-            onEnded={() => setEnded(true)}
+            onPlay={handlePlay}
+            onPause={handlePause}
+            onTimeUpdate={handleTimeUpdate}
+            onEnded={() => {
+              setEnded(true);
+              ambientRef.current?.pause();
+            }}
             onError={() => setFailed(true)}
           />
         ) : (
