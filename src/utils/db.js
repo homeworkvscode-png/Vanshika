@@ -7,6 +7,7 @@
 
 const FEEDBACK_STORAGE_KEY = "scrapbook_feedback_db";
 const STATS_STORAGE_KEY = "scrapbook_stats_db";
+const INITIALIZED_KEY = "scrapbook_initialized";
 const DEFAULT_PASS = "admin123";
 const CLOUD_API_URL = "https://api.restful-api.dev/objects/ff8081819f7e10ae019fecba9c6b1f17";
 
@@ -81,8 +82,9 @@ export function saveFeedback(entry) {
 
     feedbackList.unshift(newEntry);
     localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(feedbackList));
+    localStorage.setItem(INITIALIZED_KEY, "true");
 
-    // Sync to Cloud API asynchronously for cross-device viewing
+    // Sync to Cloud API asynchronously
     syncToCloud(feedbackList).catch(() => {});
 
     return newEntry;
@@ -98,9 +100,32 @@ export function saveFeedback(entry) {
 export function getFeedback() {
   try {
     const data = localStorage.getItem(FEEDBACK_STORAGE_KEY);
-    return data ? JSON.parse(data) : getDemoFeedback();
-  } catch {
+    if (data !== null) {
+      return JSON.parse(data);
+    }
+    // Only return demo feedback if not initialized yet
+    if (localStorage.getItem(INITIALIZED_KEY) === "true") {
+      return [];
+    }
     return getDemoFeedback();
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Delete a single feedback entry by ID
+ */
+export function deleteFeedbackById(id) {
+  try {
+    const list = getFeedback().filter((item) => item.id !== id);
+    localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(list));
+    localStorage.setItem(INITIALIZED_KEY, "true");
+    syncToCloud(list).catch(() => {});
+    return list;
+  } catch (err) {
+    console.error("Failed to delete feedback entry:", err);
+    return getFeedback();
   }
 }
 
@@ -128,6 +153,7 @@ export async function syncCloudFeedback() {
     );
 
     localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(unifiedList));
+    localStorage.setItem(INITIALIZED_KEY, "true");
     return unifiedList;
   } catch (err) {
     console.warn("Cloud sync offline fallback to local data:", err);
@@ -164,16 +190,16 @@ export function getStats() {
       : {
           totalViews: 0,
           uniqueVisitors: 0,
-          firstVisit: new Date().toISOString(),
-          lastVisit: new Date().toISOString(),
+          firstVisit: null,
+          lastVisit: null,
           pageBreakdown: {},
         };
   } catch {
     return {
       totalViews: 0,
       uniqueVisitors: 0,
-      firstVisit: new Date().toISOString(),
-      lastVisit: new Date().toISOString(),
+      firstVisit: null,
+      lastVisit: null,
       pageBreakdown: {},
     };
   }
@@ -184,7 +210,15 @@ export function getStats() {
  */
 export function resetStats() {
   try {
-    localStorage.removeItem(STATS_STORAGE_KEY);
+    const emptyStats = {
+      totalViews: 0,
+      uniqueVisitors: 0,
+      firstVisit: null,
+      lastVisit: null,
+      pageBreakdown: {},
+    };
+    localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(emptyStats));
+    sessionStorage.removeItem("scrapbook_session_id");
   } catch (err) {
     console.error("Failed to reset stats:", err);
   }
@@ -194,8 +228,13 @@ export function resetStats() {
  * Clear all stored feedback
  */
 export function clearAllFeedback() {
-  localStorage.removeItem(FEEDBACK_STORAGE_KEY);
-  syncToCloud([]).catch(() => {});
+  try {
+    localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify([]));
+    localStorage.setItem(INITIALIZED_KEY, "true");
+    syncToCloud([]).catch(() => {});
+  } catch (err) {
+    console.error("Failed to clear feedback:", err);
+  }
 }
 
 /**
@@ -203,8 +242,17 @@ export function clearAllFeedback() {
  */
 export function resetAllAdminData() {
   try {
-    localStorage.removeItem(STATS_STORAGE_KEY);
-    localStorage.removeItem(FEEDBACK_STORAGE_KEY);
+    const emptyStats = {
+      totalViews: 0,
+      uniqueVisitors: 0,
+      firstVisit: null,
+      lastVisit: null,
+      pageBreakdown: {},
+    };
+    localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(emptyStats));
+    localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify([]));
+    localStorage.setItem(INITIALIZED_KEY, "true");
+    sessionStorage.removeItem("scrapbook_session_id");
     syncToCloud([]).catch(() => {});
   } catch (err) {
     console.error("Failed to reset all data:", err);

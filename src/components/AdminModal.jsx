@@ -5,6 +5,7 @@ import {
   verifyAdminPassword,
   setAdminPassword,
   clearAllFeedback,
+  deleteFeedbackById,
   resetStats,
   resetAllAdminData,
   syncCloudFeedback,
@@ -65,13 +66,22 @@ export default function AdminModal({ isOpen, onClose }) {
   const handleClear = () => {
     if (window.confirm("Are you sure you want to clear all feedback notes?")) {
       clearAllFeedback();
+      setFeedbackList([]);
       refreshData();
+    }
+  };
+
+  const handleDeleteItem = (id) => {
+    if (window.confirm("Delete this feedback note?")) {
+      const updated = deleteFeedbackById(id);
+      setFeedbackList(updated);
     }
   };
 
   const handleResetStats = () => {
     if (window.confirm("Are you sure you want to reset visitor analytics counts?")) {
       resetStats();
+      setStats(getStats());
       refreshData();
     }
   };
@@ -83,6 +93,8 @@ export default function AdminModal({ isOpen, onClose }) {
       )
     ) {
       resetAllAdminData();
+      setFeedbackList([]);
+      setStats(getStats());
       refreshData();
     }
   };
@@ -168,18 +180,30 @@ export default function AdminModal({ isOpen, onClose }) {
                     <span className="admin-cloud-badge">
                       {isSyncing ? "Syncing Cloud DB... ⏳" : "Connected to Live Cloud DB 🌐"}
                     </span>
-                    <button
-                      type="button"
-                      className="admin-btn admin-btn--ghost admin-btn--sm"
-                      onClick={refreshData}
-                      disabled={isSyncing}
-                    >
-                      Refresh Notes 🔄
-                    </button>
+                    <div className="admin-toolbar-actions">
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn--ghost admin-btn--sm"
+                        onClick={refreshData}
+                        disabled={isSyncing}
+                      >
+                        Refresh 🔄
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn--danger admin-btn--sm"
+                        onClick={handleClear}
+                      >
+                        Clear All Notes 🗑️
+                      </button>
+                    </div>
                   </div>
 
                   {feedbackList.length === 0 ? (
-                    <p className="admin-empty">No feedback entries yet.</p>
+                    <div className="admin-empty-box">
+                      <span className="admin-empty-icon">💌</span>
+                      <p>No feedback notes right now.</p>
+                    </div>
                   ) : (
                     feedbackList.map((item) => (
                       <div key={item.id} className="admin-feedback-card">
@@ -187,6 +211,14 @@ export default function AdminModal({ isOpen, onClose }) {
                           <span className="admin-fb-rating">{item.rating}</span>
                           <span className="admin-fb-name">{item.name}</span>
                           <span className="admin-fb-time">{item.timestamp}</span>
+                          <button
+                            type="button"
+                            className="admin-delete-item-btn"
+                            onClick={() => handleDeleteItem(item.id)}
+                            title="Delete note"
+                          >
+                            🗑️
+                          </button>
                         </div>
                         <p className="admin-fb-msg">"{item.message}"</p>
                         <div className="admin-fb-footer">
@@ -199,19 +231,32 @@ export default function AdminModal({ isOpen, onClose }) {
               )}
 
               {activeTab === "stats" && (
-                <div className="admin-stats-grid">
-                  <div className="stat-card">
-                    <span className="stat-number">{stats.totalViews || 0}</span>
-                    <span className="stat-label">Total Page Views</span>
+                <div className="admin-stats-wrap">
+                  <div className="admin-feedback-toolbar">
+                    <span className="admin-cloud-badge">📊 Visitor Analytics Counter</span>
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn--danger admin-btn--sm"
+                      onClick={handleResetStats}
+                    >
+                      Reset Visitor Stats 🔄
+                    </button>
                   </div>
-                  <div className="stat-card">
-                    <span className="stat-number">{stats.uniqueVisitors || 0}</span>
-                    <span className="stat-label">Unique Sessions</span>
-                  </div>
-                  <div className="stat-card stat-card--full">
-                    <h4>🕒 Activity History</h4>
-                    <p><strong>First Visit:</strong> {stats.firstVisit ? new Date(stats.firstVisit).toLocaleString() : "N/A"}</p>
-                    <p><strong>Latest Visit:</strong> {stats.lastVisit ? new Date(stats.lastVisit).toLocaleString() : "N/A"}</p>
+
+                  <div className="admin-stats-grid">
+                    <div className="stat-card">
+                      <span className="stat-number">{stats.totalViews || 0}</span>
+                      <span className="stat-label">Total Page Views</span>
+                    </div>
+                    <div className="stat-card">
+                      <span className="stat-number">{stats.uniqueVisitors || 0}</span>
+                      <span className="stat-label">Unique Sessions</span>
+                    </div>
+                    <div className="stat-card stat-card--full">
+                      <h4>🕒 Activity History</h4>
+                      <p><strong>First Visit:</strong> {stats.firstVisit ? new Date(stats.firstVisit).toLocaleString() : "No visits logged yet"}</p>
+                      <p><strong>Latest Visit:</strong> {stats.lastVisit ? new Date(stats.lastVisit).toLocaleString() : "No visits logged yet"}</p>
+                    </div>
                   </div>
                 </div>
               )}
