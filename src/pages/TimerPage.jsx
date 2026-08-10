@@ -106,10 +106,7 @@ export default function TimerPage({ onNext }) {
         ) : (
           <div className="timer-waiting-box">
             <span className="timer-sparkle-icon">✨</span>
-            <span>Surprise unlocks at midnight IST! Or tap below to enter preview.</span>
-            <button type="button" className="timer-skip-link" onClick={onNext}>
-              Open Scrapbook Early →
-            </button>
+            <span>Surprise unlocks automatically at midnight IST!</span>
           </div>
         )}
       </div>
