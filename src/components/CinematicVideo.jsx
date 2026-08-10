@@ -3,18 +3,20 @@ import { createPortal } from "react-dom";
 
 /**
  * Fullscreen "cinema" video experience with YouTube-style Ambient Lighting (Dolby Glow Effect),
- * auto-play on phone rotation to landscape, and smooth fade-in / fade-out transitions!
+ * auto-play on phone rotation to landscape, tap-to-play animation, and smooth fade transitions!
  */
 export default function CinematicVideo({ src, caption, onFinished, onCinematicChange }) {
   const videoRef = useRef(null);
   const ambientRef = useRef(null);
   const [muted, setMuted] = useState(false); // Audio ON by default
+  const [isPlaying, setIsPlaying] = useState(false);
   const [ended, setEnded] = useState(false);
   const [failed, setFailed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isPortrait, setIsPortrait] = useState(false);
   const [dismissRotate, setDismissRotate] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [tapRipple, setTapRipple] = useState(null);
 
   // Check & monitor device orientation
   useEffect(() => {
@@ -25,8 +27,12 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
       // Auto-play video when rotated to landscape
       if (!portrait && videoRef.current) {
         const v = videoRef.current;
-        v.play().catch(() => {});
-        if (ambientRef.current) ambientRef.current.play().catch(() => {});
+        v.play()
+          .then(() => {
+            setIsPlaying(true);
+            if (ambientRef.current) ambientRef.current.play().catch(() => {});
+          })
+          .catch(() => {});
       }
     };
 
@@ -56,24 +62,61 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
     v.play()
       .then(() => {
         setLoading(false);
+        setIsPlaying(true);
         if (amb) amb.play().catch(() => {});
       })
       .catch(() => {
+        // Fallback to muted or wait for user tap
         v.muted = true;
         setMuted(true);
         v.play()
-          .then(() => setLoading(false))
-          .catch(() => setLoading(false));
+          .then(() => {
+            setLoading(false);
+            setIsPlaying(true);
+          })
+          .catch(() => {
+            setLoading(false);
+            setIsPlaying(false);
+          });
         if (amb) amb.play().catch(() => {});
       });
   }, [failed, src]);
 
+  // Handle tap anywhere on screen to play/pause in any orientation
+  const handleVideoTap = (e) => {
+    const v = videoRef.current;
+    const amb = ambientRef.current;
+    if (!v) return;
+
+    // Create visual ripple animation at tap position
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setTapRipple({ x, y, id: Date.now() });
+
+    if (v.paused) {
+      v.muted = muted;
+      v.play()
+        .then(() => {
+          setIsPlaying(true);
+          if (amb) amb.play().catch(() => {});
+        })
+        .catch(() => {});
+    } else {
+      v.pause();
+      setIsPlaying(false);
+      if (amb) amb.pause();
+    }
+  };
+
   const handlePlay = () => {
     setLoading(false);
+    setIsPlaying(true);
     ambientRef.current?.play().catch(() => {});
   };
 
   const handlePause = () => {
+    setIsPlaying(false);
     ambientRef.current?.pause();
   };
 
@@ -86,7 +129,8 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
     }
   };
 
-  const toggleMute = () => {
+  const toggleMute = (e) => {
+    e.stopPropagation();
     setMuted((m) => {
       const next = !m;
       if (videoRef.current) videoRef.current.muted = next;
@@ -94,35 +138,42 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
     });
   };
 
-  const close = () => {
+  const close = (e) => {
+    e?.stopPropagation();
     if (isClosing) return;
     setIsClosing(true);
     setTimeout(() => {
       onFinished?.();
-    }, 600); // 600ms smooth fade-out duration
+    }, 600);
   };
 
   return createPortal(
-    <div className={`cinema-page cinema-page--ready ${isClosing ? "cinema-page--closing" : ""}`}>
+    <div
+      className={`cinema-page cinema-page--ready ${isClosing ? "cinema-page--closing" : ""}`}
+      onClick={handleVideoTap}
+    >
       <div className="cinema-vignette cinema-vignette--left" aria-hidden="true" />
       <div className="cinema-vignette cinema-vignette--right" aria-hidden="true" />
 
       {/* Rotation hint prompt for video page */}
       {isPortrait && !dismissRotate && (
-        <div className="cinema-rotate-hint" role="alert">
+        <div className="cinema-rotate-hint" role="alert" onClick={(e) => e.stopPropagation()}>
           <span className="rotate-phone-icon">📱</span>
-          <span>Rotate phone to <strong>Landscape</strong> for full screen movie! 🔄</span>
+          <span>Rotate phone or <strong>Tap Screen</strong> to play! 🔄</span>
           <button
             type="button"
             className="cinema-rotate-close"
-            onClick={() => setDismissRotate(true)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setDismissRotate(true);
+            }}
           >
             ✕
           </button>
         </div>
       )}
 
-      <div className="cinema-controls">
+      <div className="cinema-controls" onClick={(e) => e.stopPropagation()}>
         <button
           type="button"
           className="cinema-btn"
@@ -137,6 +188,23 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
       </div>
 
       <div className="cinema-video-wrap">
+        {/* Visual Tap Ripple Animation */}
+        {tapRipple && (
+          <span
+            key={tapRipple.id}
+            className="tap-ripple-circle"
+            style={{ left: `${tapRipple.x}px`, top: `${tapRipple.y}px` }}
+          />
+        )}
+
+        {/* Tap to Play Overlay Banner when paused */}
+        {!isPlaying && !loading && !failed && (
+          <div className="tap-play-overlay">
+            <span className="tap-hand-icon">👆</span>
+            <p>Tap anywhere to Play 🎬</p>
+          </div>
+        )}
+
         {/* Loading Spinner */}
         {loading && !failed && (
           <div className="video-loading-spinner">
@@ -174,6 +242,7 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
             onTimeUpdate={handleTimeUpdate}
             onEnded={() => {
               setEnded(true);
+              setIsPlaying(false);
               ambientRef.current?.pause();
               setTimeout(() => {
                 close();
@@ -194,7 +263,11 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
       </div>
 
       {ended && (
-        <button type="button" className="btn btn--ghost cinema-next-btn" onClick={close}>
+        <button
+          type="button"
+          className="btn btn--ghost cinema-next-btn"
+          onClick={close}
+        >
           Continue →
         </button>
       )}
