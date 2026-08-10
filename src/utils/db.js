@@ -1,8 +1,8 @@
 /**
  * Database & Analytics Service
  * Handles storing feedback messages and tracking visitor analytics.
- * Real-time cloud synchronization ensures feedback submitted on mobile devices
- * appears instantly in the Admin Portal across any device worldwide!
+ * Real-time cloud synchronization ensures visitor counts & feedback submitted on mobile devices
+ * appear instantly in the Admin Portal across any device worldwide!
  */
 
 const FEEDBACK_STORAGE_KEY = "scrapbook_feedback_db";
@@ -12,7 +12,7 @@ const DEFAULT_PASS = "admin123";
 const CLOUD_API_URL = "https://api.restful-api.dev/objects/ff8081819f7e10ae019fecba9c6b1f17";
 
 /**
- * Log a page view for real visitors only (ignores admin visits)
+ * Log a page view for real visitors only (ignores admin visits) & sync to Cloud DB
  */
 export function trackPageView(pageName) {
   try {
@@ -46,6 +46,9 @@ export function trackPageView(pageName) {
     }
 
     localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(stats));
+
+    // Sync visitor stats live to Cloud API
+    syncToCloud(null, stats).catch(() => {});
   } catch (err) {
     console.error("Failed to log page view:", err);
   }
@@ -85,7 +88,7 @@ export function saveFeedback(entry) {
     localStorage.setItem(INITIALIZED_KEY, "true");
 
     // Sync to Cloud API asynchronously
-    syncToCloud(feedbackList).catch(() => {});
+    syncToCloud(feedbackList, null).catch(() => {});
 
     return newEntry;
   } catch (err) {
@@ -103,7 +106,6 @@ export function getFeedback() {
     if (data !== null) {
       return JSON.parse(data);
     }
-    // Only return demo feedback if not initialized yet
     if (localStorage.getItem(INITIALIZED_KEY) === "true") {
       return [];
     }
@@ -121,7 +123,7 @@ export function deleteFeedbackById(id) {
     const list = getFeedback().filter((item) => item.id !== id);
     localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(list));
     localStorage.setItem(INITIALIZED_KEY, "true");
-    syncToCloud(list).catch(() => {});
+    syncToCloud(list, null).catch(() => {});
     return list;
   } catch (err) {
     console.error("Failed to delete feedback entry:", err);
@@ -130,17 +132,20 @@ export function deleteFeedbackById(id) {
 }
 
 /**
- * Fetch & merge live feedback from Cloud DB
+ * Fetch & merge live feedback and visitor stats from Cloud DB
  */
-export async function syncCloudFeedback() {
+export async function syncCloudData() {
   try {
     const res = await fetch(CLOUD_API_URL);
-    if (!res.ok) return getFeedback();
+    if (!res.ok) return { feedback: getFeedback(), stats: getStats() };
 
     const json = await res.json();
     const remoteList = json?.data?.feedback || [];
+    const remoteStats = json?.data?.stats || null;
     const localList = getFeedback();
+    const localStats = getStats();
 
+    // Merge feedback
     const map = new Map();
     [...remoteList, ...localList].forEach((item) => {
       if (item && item.id) {
@@ -154,24 +159,44 @@ export async function syncCloudFeedback() {
 
     localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(unifiedList));
     localStorage.setItem(INITIALIZED_KEY, "true");
-    return unifiedList;
+
+    // Merge visitor stats
+    let unifiedStats = localStats;
+    if (remoteStats) {
+      unifiedStats = {
+        totalViews: Math.max(remoteStats.totalViews || 0, localStats.totalViews || 0),
+        uniqueVisitors: Math.max(remoteStats.uniqueVisitors || 0, localStats.uniqueVisitors || 0),
+        firstVisit: remoteStats.firstVisit || localStats.firstVisit,
+        lastVisit: remoteStats.lastVisit || localStats.lastVisit,
+        pageBreakdown: { ...(remoteStats.pageBreakdown || {}), ...(localStats.pageBreakdown || {}) },
+      };
+      localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(unifiedStats));
+    }
+
+    return { feedback: unifiedList, stats: unifiedStats };
   } catch (err) {
-    console.warn("Cloud sync offline fallback to local data:", err);
-    return getFeedback();
+    console.warn("Cloud sync offline fallback:", err);
+    return { feedback: getFeedback(), stats: getStats() };
   }
 }
 
 /**
- * Internal helper to push updated list to Cloud DB
+ * Internal helper to push updated list & stats to Cloud DB
  */
-async function syncToCloud(feedbackList) {
+async function syncToCloud(feedbackList, statsObj) {
   try {
+    const listToPush = feedbackList !== null && feedbackList !== undefined ? feedbackList : getFeedback();
+    const statsToPush = statsObj !== null && statsObj !== undefined ? statsObj : getStats();
+
     await fetch(CLOUD_API_URL, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: "vanshika_scrapbook_2026",
-        data: { feedback: feedbackList },
+        data: {
+          feedback: listToPush,
+          stats: statsToPush,
+        },
       }),
     });
   } catch (err) {
@@ -206,7 +231,7 @@ export function getStats() {
 }
 
 /**
- * Reset visitor stats (clears admin test counts)
+ * Reset visitor stats globally (clears test counts in local & cloud DB)
  */
 export function resetStats() {
   try {
@@ -219,6 +244,7 @@ export function resetStats() {
     };
     localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(emptyStats));
     sessionStorage.removeItem("scrapbook_session_id");
+    syncToCloud(null, emptyStats).catch(() => {});
   } catch (err) {
     console.error("Failed to reset stats:", err);
   }
@@ -231,7 +257,7 @@ export function clearAllFeedback() {
   try {
     localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify([]));
     localStorage.setItem(INITIALIZED_KEY, "true");
-    syncToCloud([]).catch(() => {});
+    syncToCloud([], null).catch(() => {});
   } catch (err) {
     console.error("Failed to clear feedback:", err);
   }
@@ -253,7 +279,7 @@ export function resetAllAdminData() {
     localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify([]));
     localStorage.setItem(INITIALIZED_KEY, "true");
     sessionStorage.removeItem("scrapbook_session_id");
-    syncToCloud([]).catch(() => {});
+    syncToCloud([], emptyStats).catch(() => {});
   } catch (err) {
     console.error("Failed to reset all data:", err);
   }

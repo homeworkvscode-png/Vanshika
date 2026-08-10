@@ -8,7 +8,7 @@ import {
   deleteFeedbackById,
   resetStats,
   resetAllAdminData,
-  syncCloudFeedback,
+  syncCloudData,
 } from "../utils/db.js";
 
 export default function AdminModal({ isOpen, onClose }) {
@@ -33,10 +33,11 @@ export default function AdminModal({ isOpen, onClose }) {
     setFeedbackList(getFeedback());
     setStats(getStats());
 
-    // Fetch live feedback from cloud database across devices
+    // Fetch live feedback AND live visitor stats from Cloud DB across devices
     try {
-      const liveFeedback = await syncCloudFeedback();
+      const { feedback: liveFeedback, stats: liveStats } = await syncCloudData();
       setFeedbackList(liveFeedback);
+      setStats(liveStats);
     } catch {}
     setIsSyncing(false);
   };
@@ -160,7 +161,10 @@ export default function AdminModal({ isOpen, onClose }) {
                 </button>
                 <button
                   className={`admin-tab ${activeTab === "stats" ? "admin-tab--active" : ""}`}
-                  onClick={() => setActiveTab("stats")}
+                  onClick={() => {
+                    setActiveTab("stats");
+                    refreshData();
+                  }}
                 >
                   📊 Visitor Analytics
                 </button>
@@ -233,14 +237,26 @@ export default function AdminModal({ isOpen, onClose }) {
               {activeTab === "stats" && (
                 <div className="admin-stats-wrap">
                   <div className="admin-feedback-toolbar">
-                    <span className="admin-cloud-badge">📊 Visitor Analytics Counter</span>
-                    <button
-                      type="button"
-                      className="admin-btn admin-btn--danger admin-btn--sm"
-                      onClick={handleResetStats}
-                    >
-                      Reset Visitor Stats 🔄
-                    </button>
+                    <span className="admin-cloud-badge">
+                      {isSyncing ? "Syncing Visitor Stats... ⏳" : "Live Cloud Analytics Active 🌐"}
+                    </span>
+                    <div className="admin-toolbar-actions">
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn--ghost admin-btn--sm"
+                        onClick={refreshData}
+                        disabled={isSyncing}
+                      >
+                        Refresh 🔄
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn--danger admin-btn--sm"
+                        onClick={handleResetStats}
+                      >
+                        Reset Visitor Stats 🔄
+                      </button>
+                    </div>
                   </div>
 
                   <div className="admin-stats-grid">
@@ -250,12 +266,12 @@ export default function AdminModal({ isOpen, onClose }) {
                     </div>
                     <div className="stat-card">
                       <span className="stat-number">{stats.uniqueVisitors || 0}</span>
-                      <span className="stat-label">Unique Sessions</span>
+                      <span className="stat-label">Unique Visitors</span>
                     </div>
                     <div className="stat-card stat-card--full">
                       <h4>🕒 Activity History</h4>
-                      <p><strong>First Visit:</strong> {stats.firstVisit ? new Date(stats.firstVisit).toLocaleString() : "No visits logged yet"}</p>
-                      <p><strong>Latest Visit:</strong> {stats.lastVisit ? new Date(stats.lastVisit).toLocaleString() : "No visits logged yet"}</p>
+                      <p><strong>First Visit:</strong> {stats.firstVisit ? new Date(stats.firstVisit).toLocaleString() : "No visitor activity logged yet"}</p>
+                      <p><strong>Latest Visit:</strong> {stats.lastVisit ? new Date(stats.lastVisit).toLocaleString() : "No visitor activity logged yet"}</p>
                     </div>
                   </div>
                 </div>
