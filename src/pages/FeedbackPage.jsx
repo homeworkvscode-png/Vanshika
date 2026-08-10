@@ -1,18 +1,27 @@
 import { useState } from "react";
 import Button from "../components/Button.jsx";
 import FloatingHearts from "../components/FloatingHearts.jsx";
+import { saveFeedback } from "../utils/db.js";
 import { FINAL_MESSAGE, FINAL_SUBTEXT, FEEDBACK_PROMPT, FEEDBACK_CONFIRM } from "../content.js";
+
+const RATINGS = ["💖", "🥰", "✨", "💌", "🎉"];
 
 export default function FeedbackPage({ onReplay }) {
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
+  const [selectedRating, setSelectedRating] = useState("💖");
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim()) return;
-    // UI-only — no backend. Swap this for a fetch()/form action if you
-    // wire one up later.
+
+    saveFeedback({
+      name: name.trim(),
+      message: message.trim(),
+      rating: selectedRating,
+    });
+
     setSubmitted(true);
   };
 
@@ -28,6 +37,19 @@ export default function FeedbackPage({ onReplay }) {
           <form className="feedback-form" onSubmit={handleSubmit}>
             <p className="feedback-prompt">{FEEDBACK_PROMPT}</p>
 
+            <div className="rating-picker">
+              {RATINGS.map((emoji) => (
+                <button
+                  type="button"
+                  key={emoji}
+                  className={`rating-emoji ${selectedRating === emoji ? "rating-emoji--active" : ""}`}
+                  onClick={() => setSelectedRating(emoji)}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+
             <label className="feedback-label" htmlFor="fb-name">
               Your name
             </label>
@@ -37,7 +59,7 @@ export default function FeedbackPage({ onReplay }) {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
+              placeholder="Vanshika"
               required
             />
 
@@ -53,7 +75,7 @@ export default function FeedbackPage({ onReplay }) {
               rows={4}
             />
 
-            <Button type="submit">Send ❤️</Button>
+            <Button type="submit">Send Note ❤️</Button>
           </form>
         ) : (
           <div className="feedback-confirm" role="status">
@@ -61,6 +83,9 @@ export default function FeedbackPage({ onReplay }) {
               💌
             </span>
             <p>{FEEDBACK_CONFIRM}</p>
+            <span style={{ fontSize: "0.9rem", color: "var(--ink-soft)", marginTop: "0.4rem" }}>
+              Your note has been saved into the scrapbook database!
+            </span>
           </div>
         )}
       </div>

@@ -1,0 +1,208 @@
+import { useState, useEffect } from "react";
+import {
+  getFeedback,
+  getStats,
+  verifyAdminPassword,
+  setAdminPassword,
+  clearAllFeedback,
+} from "../utils/db.js";
+
+export default function AdminModal({ isOpen, onClose }) {
+  const [password, setPassword] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loginError, setLoginError] = useState("");
+  const [activeTab, setActiveTab] = useState("feedback");
+  const [feedbackList, setFeedbackList] = useState([]);
+  const [stats, setStats] = useState({});
+  const [newPassword, setNewPassword] = useState("");
+  const [passMsg, setPassMsg] = useState("");
+
+  useEffect(() => {
+    if (isOpen && isAuthenticated) {
+      refreshData();
+    }
+  }, [isOpen, isAuthenticated]);
+
+  const refreshData = () => {
+    setFeedbackList(getFeedback());
+    setStats(getStats());
+  };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (verifyAdminPassword(password)) {
+      setIsAuthenticated(true);
+      setLoginError("");
+      refreshData();
+    } else {
+      setLoginError("Incorrect Password! Default is 'admin123'");
+    }
+  };
+
+  const handlePasswordChange = (e) => {
+    e.preventDefault();
+    if (newPassword.length < 4) {
+      setPassMsg("Password must be at least 4 characters long");
+      return;
+    }
+    setAdminPassword(newPassword);
+    setPassMsg("Password updated successfully! ✅");
+    setNewPassword("");
+  };
+
+  const handleClear = () => {
+    if (window.confirm("Are you sure you want to clear all feedback notes?")) {
+      clearAllFeedback();
+      refreshData();
+    }
+  };
+
+  const exportJSON = () => {
+    const data = {
+      feedback: getFeedback(),
+      stats: getStats(),
+      exportedAt: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `scrapbook-admin-export-${Date.now()}.json`;
+    a.click();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="admin-overlay" onClick={onClose}>
+      <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="admin-close" onClick={onClose} aria-label="Close Admin">
+          ✕
+        </button>
+
+        {!isAuthenticated ? (
+          <div className="admin-login-box">
+            <div className="admin-icon">🔐</div>
+            <h2>Admin Control Portal</h2>
+            <p>Enter your password to view feedback notes & visitor stats.</p>
+
+            <form onSubmit={handleLogin} className="admin-form">
+              <input
+                type="password"
+                className="admin-input"
+                placeholder="Enter password (default: admin123)"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoFocus
+              />
+              {loginError && <p className="admin-error">{loginError}</p>}
+
+              <button type="submit" className="admin-btn">
+                Unlock Dashboard 🔓
+              </button>
+            </form>
+          </div>
+        ) : (
+          <div className="admin-dashboard">
+            <div className="admin-header">
+              <h2>👑 Scrapbook Admin Panel</h2>
+              <div className="admin-tabs">
+                <button
+                  className={`admin-tab ${activeTab === "feedback" ? "admin-tab--active" : ""}`}
+                  onClick={() => setActiveTab("feedback")}
+                >
+                  💌 Feedback ({feedbackList.length})
+                </button>
+                <button
+                  className={`admin-tab ${activeTab === "stats" ? "admin-tab--active" : ""}`}
+                  onClick={() => setActiveTab("stats")}
+                >
+                  📊 Visitor Analytics
+                </button>
+                <button
+                  className={`admin-tab ${activeTab === "settings" ? "admin-tab--active" : ""}`}
+                  onClick={() => setActiveTab("settings")}
+                >
+                  ⚙️ Settings
+                </button>
+              </div>
+            </div>
+
+            <div className="admin-content">
+              {activeTab === "feedback" && (
+                <div className="admin-feedback-list">
+                  {feedbackList.length === 0 ? (
+                    <p className="admin-empty">No feedback entries yet.</p>
+                  ) : (
+                    feedbackList.map((item) => (
+                      <div key={item.id} className="admin-feedback-card">
+                        <div className="admin-fb-header">
+                          <span className="admin-fb-rating">{item.rating}</span>
+                          <span className="admin-fb-name">{item.name}</span>
+                          <span className="admin-fb-time">{item.timestamp}</span>
+                        </div>
+                        <p className="admin-fb-msg">"{item.message}"</p>
+                        <div className="admin-fb-footer">
+                          <span className="admin-fb-device">{item.device}</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {activeTab === "stats" && (
+                <div className="admin-stats-grid">
+                  <div className="stat-card">
+                    <span className="stat-number">{stats.totalViews || 0}</span>
+                    <span className="stat-label">Total Page Views</span>
+                  </div>
+                  <div className="stat-card">
+                    <span className="stat-number">{stats.uniqueVisitors || 0}</span>
+                    <span className="stat-label">Unique Sessions</span>
+                  </div>
+                  <div className="stat-card stat-card--full">
+                    <h4>🕒 Activity History</h4>
+                    <p><strong>First Visit:</strong> {new Date(stats.firstVisit).toLocaleString()}</p>
+                    <p><strong>Latest Visit:</strong> {new Date(stats.lastVisit).toLocaleString()}</p>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "settings" && (
+                <div className="admin-settings">
+                  <h3>🔑 Change Admin Password</h3>
+                  <form onSubmit={handlePasswordChange} className="admin-form">
+                    <input
+                      type="password"
+                      className="admin-input"
+                      placeholder="New Admin Password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
+                    <button type="submit" className="admin-btn">
+                      Update Password
+                    </button>
+                    {passMsg && <p className="admin-success">{passMsg}</p>}
+                  </form>
+
+                  <hr className="admin-divider" />
+
+                  <h3>📥 Data Management</h3>
+                  <div className="admin-actions">
+                    <button onClick={exportJSON} className="admin-btn admin-btn--ghost">
+                      Export Data to JSON 📄
+                    </button>
+                    <button onClick={handleClear} className="admin-btn admin-btn--danger">
+                      Clear Feedback DB 🗑️
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

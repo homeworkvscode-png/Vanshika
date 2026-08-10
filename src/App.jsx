@@ -1,16 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import GinghamBackground from "./components/GinghamBackground.jsx";
 import PageDots from "./components/PageDots.jsx";
 import GalleryButton from "./components/GalleryButton.jsx";
 import FeedbackButton from "./components/FeedbackButton.jsx";
+import AdminButton from "./components/AdminButton.jsx";
+import AdminModal from "./components/AdminModal.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import LetterPage from "./pages/LetterPage.jsx";
 import CollagePage from "./pages/CollagePage.jsx";
 import GalleryPage from "./pages/GalleryPage.jsx";
 import VideoPage from "./pages/VideoPage.jsx";
 import FeedbackPage from "./pages/FeedbackPage.jsx";
+import { trackPageView } from "./utils/db.js";
 
 const PAGE_COUNT = 6;
+const PAGE_NAMES = ["Landing", "Letter", "Collage", "Gallery", "Video", "Feedback"];
 const LANDING_INDEX = 0;
 const GALLERY_INDEX = 3;
 const VIDEO_INDEX = 4;
@@ -19,22 +23,30 @@ const FEEDBACK_INDEX = 5;
 export default function App() {
   const [pageIndex, setPageIndex] = useState(LANDING_INDEX);
   const [cinematic, setCinematic] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
+
+  useEffect(() => {
+    // Check if ?admin=true is in URL
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("admin") === "true") {
+      setShowAdmin(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    trackPageView(PAGE_NAMES[pageIndex] || "Page_" + pageIndex);
+  }, [pageIndex]);
 
   const goTo = (i) => setPageIndex(i);
   const next = () => setPageIndex((i) => Math.min(i + 1, PAGE_COUNT - 1));
   const replay = () => setPageIndex(LANDING_INDEX);
 
-  // The landing "spotlight" moment and the cinematic video both take over
-  // the full viewport via a portal, so the persistent nav chrome (gallery
-  // shortcut, feedback shortcut, page dots) hides itself while they're up.
   const showChrome = !cinematic && pageIndex !== LANDING_INDEX;
 
   return (
     <div className={cinematic ? "app app--cinematic" : "app"}>
       <GinghamBackground />
 
-      {/* `key` forces a remount on page change, which replays the
-          .page-frame entrance animation defined in index.css */}
       <div
         className={`page-frame${pageIndex === GALLERY_INDEX ? " page-frame--wide" : ""}`}
         key={pageIndex}
@@ -54,6 +66,10 @@ export default function App() {
         <FeedbackButton onClick={() => goTo(FEEDBACK_INDEX)} />
       )}
       {showChrome && <PageDots count={PAGE_COUNT} activeIndex={pageIndex} onSelect={goTo} />}
+
+      <AdminButton onClick={() => setShowAdmin(true)} />
+
+      <AdminModal isOpen={showAdmin} onClose={() => setShowAdmin(false)} />
     </div>
   );
 }
