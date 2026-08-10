@@ -56,9 +56,17 @@ export const GALLERY_ITEMS = Object.keys(galleryGlob).map((path, i) => ({
 }));
 
 /* ---------------------------------------------------------------------- */
-/* 4. CINEMATIC VIDEO PAGE                                                */
+/* 4. CINEMATIC VIDEO PAGE — Auto-detects video file in public/videos     */
 /* ---------------------------------------------------------------------- */
-export const VIDEO_SRC = "/videos/video1.mp4";
+const videoGlob = import.meta.glob(
+  "/public/videos/*.{mp4,mov,webm,MP4,MOV,WEBM}",
+  { eager: true, query: "?url", import: "default" }
+);
+
+const scannedVideos = Object.keys(videoGlob);
+export const VIDEO_SRC = scannedVideos.length > 0
+  ? scannedVideos[0].replace("/public", "")
+  : "/videos/video1.mp4";
 export const VIDEO_CAPTION = "A small memory for you 💖";
 
 /* ---------------------------------------------------------------------- */
