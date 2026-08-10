@@ -3,20 +3,17 @@ import { createPortal } from "react-dom";
 
 /**
  * Fullscreen "cinema" video experience. Portaled straight into <body> so it
- * always covers the true viewport. Audio ON by default!
+ * always covers the true viewport. Plays instantly without delay in full size!
  */
 export default function CinematicVideo({ src, caption, onFinished, onCinematicChange }) {
   const videoRef = useRef(null);
-  const [ready, setReady] = useState(false);
   const [muted, setMuted] = useState(false); // Audio ON by default
   const [ended, setEnded] = useState(false);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     onCinematicChange?.(true);
-    const raf = requestAnimationFrame(() => setReady(true));
     return () => {
-      cancelAnimationFrame(raf);
       onCinematicChange?.(false);
     };
   }, [onCinematicChange]);
@@ -27,7 +24,7 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
 
     v.muted = false;
     v.play().catch(() => {
-      // If browser blocks unmuted autoplay without user click, fallback to muted autoplay
+      // Fallback if browser requires user click for unmuted autoplay
       v.muted = true;
       setMuted(true);
       v.play().catch(() => {});
@@ -45,7 +42,7 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
   const close = () => onFinished?.();
 
   return createPortal(
-    <div className={`cinema-page${ready ? " cinema-page--ready" : ""}`}>
+    <div className="cinema-page cinema-page--ready">
       <div className="cinema-vignette cinema-vignette--left" aria-hidden="true" />
       <div className="cinema-vignette cinema-vignette--right" aria-hidden="true" />
 
@@ -70,6 +67,7 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
             className="cinema-video"
             src={src}
             autoPlay
+            preload="auto"
             muted={muted}
             playsInline
             onEnded={() => setEnded(true)}
