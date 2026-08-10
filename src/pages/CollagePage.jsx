@@ -48,7 +48,6 @@ export default function CollagePage({ onNext }) {
                 </div>
               )}
             </div>
-            {item.caption && <span className="collage-caption">{item.caption}</span>}
           </button>
         ))}
       </div>
