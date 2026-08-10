@@ -25,18 +25,29 @@ export const LETTER_BODY = [
 ];
 
 /* ---------------------------------------------------------------------- */
-/* 2. COLLAGE PAGE — scrapbook polaroids                                  */
+/* 2. COLLAGE PAGE — Automatically includes ALL pictures in public/images/collage */
 /* ---------------------------------------------------------------------- */
 export const COLLAGE_KICKER = "a few of my favorite moments";
 export const COLLAGE_HINT = "tap a photo for a closer look";
-export const COLLAGE_ITEMS = [
-  { src: "/images/collage/img1.jpg", caption: "that one afternoon" },
-  { src: "/images/collage/img2.jpg", caption: "we still laugh about this" },
-  { src: "/images/collage/img3.jpg", caption: "my favorite kind of chaos" },
-  { src: "/images/collage/img4.jpg", caption: "you, mid-laugh" },
-  { src: "/images/collage/img5.jpg", caption: "a good day" },
-  { src: "/images/collage/img6.jpg", caption: "keep this one forever" },
+
+const collageGlob = import.meta.glob(
+  "/public/images/collage/*.{jpeg,jpg,png,webp,JPEG,JPG,PNG,WEBP}",
+  { eager: true, query: "?url", import: "default" }
+);
+
+const DEFAULT_CAPTIONS = [
+  "that one afternoon",
+  "we still laugh about this",
+  "my favorite kind of chaos",
+  "you, mid-laugh",
+  "a good day",
+  "keep this one forever",
 ];
+
+export const COLLAGE_ITEMS = Object.keys(collageGlob).map((path, i) => ({
+  src: path.replace("/public", ""),
+  caption: DEFAULT_CAPTIONS[i % DEFAULT_CAPTIONS.length] || `moment #${i + 1}`,
+}));
 
 /* ---------------------------------------------------------------------- */
 /* 3. GALLERY PAGE — Automatically includes ALL pictures in public/images/gallery */
