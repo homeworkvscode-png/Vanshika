@@ -2,16 +2,6 @@
  * ============================================================================
  *  ALL THE EDITABLE COPY + MEDIA LIVES HERE
  * ============================================================================
- *  Change names, messages, captions, and image/video paths in this one file
- *  — no need to dig through every page component.
- *
- *  📁 MEDIA: drop your files into /public and they're served from "/".
- *     - Collage photos → public/images/collage/img1.jpg, img2.jpg, ...
- *     - Gallery photos → public/images/gallery/img1.jpg, img2.jpg, ...
- *     - Video          → public/videos/video1.mp4
- *  Every image/video has a graceful fallback if the file is missing, so the
- *  site never shows a broken image icon or broken player.
- * ============================================================================
  */
 
 export const RECIPIENT_NAME = "Vanshika";
@@ -49,177 +39,21 @@ export const COLLAGE_ITEMS = [
 ];
 
 /* ---------------------------------------------------------------------- */
-/* 3. GALLERY PAGE — the full album, supports many images                */
+/* 3. GALLERY PAGE — Automatically includes ALL pictures in public/images/gallery */
 /* ---------------------------------------------------------------------- */
 export const GALLERY_TITLE = "the whole album";
 export const GALLERY_HINT = "tap any photo for a closer look";
-// Add or remove entries freely — the grid and lightbox both scale to any count.
-export const GALLERY_ITEMS = [
-  {
-    "src": "/images/gallery/imag1.jpeg",
-    "caption": "memory #1"
-  },
-  {
-    "src": "/images/gallery/imag2.jpeg",
-    "caption": "memory #2"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.10 PM (10).jpeg",
-    "caption": "memory #3"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.10 PM (11).jpeg",
-    "caption": "memory #4"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.10 PM (12).jpeg",
-    "caption": "memory #5"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.10 PM (13).jpeg",
-    "caption": "memory #6"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.10 PM (2).jpeg",
-    "caption": "memory #7"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.10 PM (3).jpeg",
-    "caption": "memory #8"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.10 PM (4).jpeg",
-    "caption": "memory #9"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.10 PM (5).jpeg",
-    "caption": "memory #10"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.10 PM (6).jpeg",
-    "caption": "memory #11"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.10 PM (7).jpeg",
-    "caption": "memory #12"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.10 PM (8).jpeg",
-    "caption": "memory #13"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.10 PM (9).jpeg",
-    "caption": "memory #14"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.10 PM.jpeg",
-    "caption": "memory #15"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (1).jpeg",
-    "caption": "memory #16"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (10).jpeg",
-    "caption": "memory #17"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (11).jpeg",
-    "caption": "memory #18"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (12).jpeg",
-    "caption": "memory #19"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (13).jpeg",
-    "caption": "memory #20"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (14).jpeg",
-    "caption": "memory #21"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (15).jpeg",
-    "caption": "memory #22"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (16).jpeg",
-    "caption": "memory #23"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (17).jpeg",
-    "caption": "memory #24"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (18).jpeg",
-    "caption": "memory #25"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (19).jpeg",
-    "caption": "memory #26"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (2).jpeg",
-    "caption": "memory #27"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (20).jpeg",
-    "caption": "memory #28"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (21).jpeg",
-    "caption": "memory #29"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (22).jpeg",
-    "caption": "memory #30"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (23).jpeg",
-    "caption": "memory #31"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (24).jpeg",
-    "caption": "memory #32"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (25).jpeg",
-    "caption": "memory #33"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (26).jpeg",
-    "caption": "memory #34"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (3).jpeg",
-    "caption": "memory #35"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (4).jpeg",
-    "caption": "memory #36"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (5).jpeg",
-    "caption": "memory #37"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (6).jpeg",
-    "caption": "memory #38"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (7).jpeg",
-    "caption": "memory #39"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (8).jpeg",
-    "caption": "memory #40"
-  },
-  {
-    "src": "/images/gallery/WhatsApp Image 2026-08-09 at 10.25.11 PM (9).jpeg",
-    "caption": "memory #41"
-  }
-];
+
+// Auto-scan ALL images inside public/images/gallery dynamically
+const galleryGlob = import.meta.glob(
+  "/public/images/gallery/*.{jpeg,jpg,png,webp,JPEG,JPG,PNG,WEBP}",
+  { eager: true, query: "?url", import: "default" }
+);
+
+export const GALLERY_ITEMS = Object.keys(galleryGlob).map((path, i) => ({
+  src: path.replace("/public", ""),
+  caption: `memory #${i + 1}`,
+}));
 
 /* ---------------------------------------------------------------------- */
 /* 4. CINEMATIC VIDEO PAGE                                                */
