@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 
 /**
  * Clean fullscreen video player with YouTube Ambient Lighting (Dolby Glow Effect),
- * rotation auto-play on landscape, and smooth fade transitions!
+ * instant play on landscape, theme-matched small rotation hint for portrait mode, and smooth fade transitions!
  */
 export default function CinematicVideo({ src, caption, onFinished, onCinematicChange }) {
   const videoRef = useRef(null);
@@ -11,7 +11,6 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
   const [muted, setMuted] = useState(false); // Audio ON by default
   const [ended, setEnded] = useState(false);
   const [failed, setFailed] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [isPortrait, setIsPortrait] = useState(false);
   const [dismissRotate, setDismissRotate] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -22,7 +21,7 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
       const portrait = window.innerHeight > window.innerWidth && window.innerWidth <= 768;
       setIsPortrait(portrait);
 
-      // Auto-play video when rotated to landscape
+      // Auto-play video instantly when rotated to landscape
       if (!portrait && videoRef.current) {
         const v = videoRef.current;
         v.play().catch(() => {});
@@ -55,21 +54,17 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
     v.muted = false;
     v.play()
       .then(() => {
-        setLoading(false);
         if (amb) amb.play().catch(() => {});
       })
       .catch(() => {
         v.muted = true;
         setMuted(true);
-        v.play()
-          .then(() => setLoading(false))
-          .catch(() => setLoading(false));
+        v.play().catch(() => {});
         if (amb) amb.play().catch(() => {});
       });
   }, [failed, src]);
 
   const handlePlay = () => {
-    setLoading(false);
     ambientRef.current?.play().catch(() => {});
   };
 
@@ -107,15 +102,16 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
       <div className="cinema-vignette cinema-vignette--left" aria-hidden="true" />
       <div className="cinema-vignette cinema-vignette--right" aria-hidden="true" />
 
-      {/* Rotation hint prompt for video page */}
+      {/* Small theme-matched rotation notification ONLY for portrait mobile view */}
       {isPortrait && !dismissRotate && (
         <div className="cinema-rotate-hint" role="alert">
-          <span className="rotate-phone-icon">📱</span>
-          <span>Rotate phone to <strong>Landscape</strong> for full screen movie! 🔄</span>
+          <span className="rotate-phone-icon">🔄</span>
+          <span>Rotate to <strong>landscape</strong> for the best experience ✨</span>
           <button
             type="button"
             className="cinema-rotate-close"
             onClick={() => setDismissRotate(true)}
+            aria-label="Dismiss rotation hint"
           >
             ✕
           </button>
@@ -137,14 +133,6 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
       </div>
 
       <div className="cinema-video-wrap">
-        {/* Loading Spinner */}
-        {loading && !failed && (
-          <div className="video-loading-spinner">
-            <span className="spinner-icon">✨</span>
-            <p>Loading video...</p>
-          </div>
-        )}
-
         {/* YouTube Ambient Glow Background */}
         {src && !failed && (
           <video
@@ -168,7 +156,6 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
             preload="auto"
             muted={muted}
             playsInline
-            onCanPlay={() => setLoading(false)}
             onPlay={handlePlay}
             onPause={handlePause}
             onTimeUpdate={handleTimeUpdate}
@@ -178,10 +165,7 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
                 close();
               }, 800);
             }}
-            onError={() => {
-              setFailed(true);
-              setLoading(false);
-            }}
+            onError={() => setFailed(true)}
           />
         ) : (
           <div className="cinema-video-fallback">
