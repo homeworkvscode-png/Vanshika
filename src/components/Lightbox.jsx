@@ -53,7 +53,6 @@ export default function Lightbox({ items, index, onClose, onNavigate }) {
 
       <figure className="lightbox-figure" onClick={(e) => e.stopPropagation()} key={item.src}>
         <img src={item.src} alt={item.caption || ""} />
-        {item.caption && <figcaption>{item.caption}</figcaption>}
       </figure>
 
       {total > 1 && (
