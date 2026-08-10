@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 
 /**
  * Fullscreen "cinema" video experience with YouTube-style Ambient Lighting (Dolby Glow Effect),
- * auto-play on phone rotation to landscape, and pre-buffered instant loading!
+ * auto-play on phone rotation to landscape, and smooth fade-in / fade-out transitions!
  */
 export default function CinematicVideo({ src, caption, onFinished, onCinematicChange }) {
   const videoRef = useRef(null);
@@ -14,6 +14,7 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
   const [loading, setLoading] = useState(true);
   const [isPortrait, setIsPortrait] = useState(false);
   const [dismissRotate, setDismissRotate] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
 
   // Check & monitor device orientation
   useEffect(() => {
@@ -93,10 +94,16 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
     });
   };
 
-  const close = () => onFinished?.();
+  const close = () => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      onFinished?.();
+    }, 600); // 600ms smooth fade-out duration
+  };
 
   return createPortal(
-    <div className="cinema-page cinema-page--ready">
+    <div className={`cinema-page cinema-page--ready ${isClosing ? "cinema-page--closing" : ""}`}>
       <div className="cinema-vignette cinema-vignette--left" aria-hidden="true" />
       <div className="cinema-vignette cinema-vignette--right" aria-hidden="true" />
 
@@ -168,6 +175,9 @@ export default function CinematicVideo({ src, caption, onFinished, onCinematicCh
             onEnded={() => {
               setEnded(true);
               ambientRef.current?.pause();
+              setTimeout(() => {
+                close();
+              }, 800);
             }}
             onError={() => {
               setFailed(true);

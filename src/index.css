@@ -749,9 +749,10 @@ body {
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.7s ease;
+  transition: opacity 0.6s cubic-bezier(0.19, 1, 0.22, 1);
 }
 .cinema-page--ready { opacity: 1; }
+.cinema-page--closing { opacity: 0 !important; pointer-events: none; }
 
 .cinema-vignette {
   position: absolute;

@@ -4,7 +4,6 @@ import PageDots from "./components/PageDots.jsx";
 import GalleryButton from "./components/GalleryButton.jsx";
 import FeedbackButton from "./components/FeedbackButton.jsx";
 import AdminModal from "./components/AdminModal.jsx";
-import RotatePrompt from "./components/RotatePrompt.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import LetterPage from "./pages/LetterPage.jsx";
 import CollagePage from "./pages/CollagePage.jsx";
@@ -61,8 +60,6 @@ export default function App() {
   return (
     <div className={cinematic ? "app app--cinematic" : "app"}>
       <GinghamBackground />
-
-      <RotatePrompt />
 
       <div
         className={`page-frame${pageIndex === GALLERY_INDEX ? " page-frame--wide" : ""}`}
