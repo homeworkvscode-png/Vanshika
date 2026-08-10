@@ -21,7 +21,7 @@ export const SENDER_NAME = "Me";
 /* 1. LANDING PAGE                                                        */
 /* ---------------------------------------------------------------------- */
 export const LANDING_TITLE = "Happy Birthday Vanshika ❤️";
-export const LANDING_SUBTEXT = "move your cursor across the pink to reveal a little surprise";
+export const LANDING_SUBTEXT = "open this when you have a quiet minute ✨";
 export const LANDING_BUTTON = "Open it →";
 
 /* ---------------------------------------------------------------------- */

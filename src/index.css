@@ -205,6 +205,32 @@ body {
 }
 
 /* ==========================================================================
+   COVER PAGE
+   ========================================================================== */
+.cover-card {
+  max-width: 420px;
+}
+.cover-heart {
+  font-size: 2.2rem;
+  margin-bottom: 0.4rem;
+  animation: heartBeat 2.4s ease-in-out infinite;
+}
+.cover-title {
+  font-family: var(--font-hand);
+  font-size: clamp(2rem, 6vw, 2.7rem);
+  font-weight: 700;
+  color: var(--rose-dark);
+  margin: 0 0 0.5rem;
+  line-height: 1.2;
+}
+.cover-subtext {
+  font-family: var(--font-hand);
+  font-size: 1.25rem;
+  color: var(--ink-soft);
+  margin: 0 0 1.8rem;
+}
+
+/* ==========================================================================
    SHARED KICKER / HINT TEXT
    used on the Collage and Gallery pages
    ========================================================================== */
