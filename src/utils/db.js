@@ -8,22 +8,31 @@ const FEEDBACK_STORAGE_KEY = "scrapbook_feedback_db";
 const STATS_STORAGE_KEY = "scrapbook_stats_db";
 const DEFAULT_PASS = "admin123";
 
-// Public cloud KV storage fallback for cross-device syncing (if available)
-const CLOUD_SYNC_URL = "https://api.myjson.online/v1/records";
-
 /**
- * Log a page view for analytics
+ * Log a page view for real visitors only (ignores admin visits)
  */
 export function trackPageView(pageName) {
   try {
+    // Ignore ALL visits from admin users, admin URLs, or logged-in admins
+    const isAdmin =
+      localStorage.getItem("scrapbook_is_admin") === "true" ||
+      sessionStorage.getItem("scrapbook_is_admin") === "true" ||
+      window.location.pathname.toLowerCase().includes("admin") ||
+      window.location.search.toLowerCase().includes("admin") ||
+      window.location.hash.toLowerCase().includes("admin");
+
+    if (isAdmin) {
+      return; // Skip analytics logging for admin
+    }
+
     const stats = getStats();
     const now = new Date().toISOString();
-    
+
     stats.totalViews = (stats.totalViews || 0) + 1;
     stats.lastVisit = now;
-    
+
     if (!stats.firstVisit) stats.firstVisit = now;
-    
+
     stats.pageBreakdown = stats.pageBreakdown || {};
     stats.pageBreakdown[pageName] = (stats.pageBreakdown[pageName] || 0) + 1;
 
@@ -39,6 +48,16 @@ export function trackPageView(pageName) {
   } catch (err) {
     console.error("Failed to log page view:", err);
   }
+}
+
+/**
+ * Flag browser session as Admin (prevents self-counting)
+ */
+export function markAsAdmin() {
+  try {
+    localStorage.setItem("scrapbook_is_admin", "true");
+    sessionStorage.setItem("scrapbook_is_admin", "true");
+  } catch {}
 }
 
 /**
@@ -90,20 +109,31 @@ export function getStats() {
     return data
       ? JSON.parse(data)
       : {
-          totalViews: 1,
-          uniqueVisitors: 1,
+          totalViews: 0,
+          uniqueVisitors: 0,
           firstVisit: new Date().toISOString(),
           lastVisit: new Date().toISOString(),
-          pageBreakdown: { Landing: 1 },
+          pageBreakdown: {},
         };
   } catch {
     return {
-      totalViews: 1,
-      uniqueVisitors: 1,
+      totalViews: 0,
+      uniqueVisitors: 0,
       firstVisit: new Date().toISOString(),
       lastVisit: new Date().toISOString(),
-      pageBreakdown: { Landing: 1 },
+      pageBreakdown: {},
     };
+  }
+}
+
+/**
+ * Reset visitor stats (clears admin test counts)
+ */
+export function resetStats() {
+  try {
+    localStorage.removeItem(STATS_STORAGE_KEY);
+  } catch (err) {
+    console.error("Failed to reset stats:", err);
   }
 }
 
@@ -119,7 +149,11 @@ export function clearAllFeedback() {
  */
 export function verifyAdminPassword(pass) {
   const customPass = localStorage.getItem("scrapbook_admin_pass") || DEFAULT_PASS;
-  return pass === customPass;
+  const valid = pass === customPass;
+  if (valid) {
+    markAsAdmin();
+  }
+  return valid;
 }
 
 /**
@@ -143,7 +177,7 @@ function getDemoFeedback() {
       name: "Vanshika",
       message: "This is so beautiful! Thank you so much for this amazing surprise ❤️",
       rating: "💖",
-      timestamp: "Today at " + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: "Today at " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       rawTimestamp: Date.now(),
       device: "Mobile Device 📱",
     },

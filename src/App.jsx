@@ -10,7 +10,7 @@ import CollagePage from "./pages/CollagePage.jsx";
 import GalleryPage from "./pages/GalleryPage.jsx";
 import VideoPage from "./pages/VideoPage.jsx";
 import FeedbackPage from "./pages/FeedbackPage.jsx";
-import { trackPageView } from "./utils/db.js";
+import { trackPageView, markAsAdmin } from "./utils/db.js";
 
 const PAGE_COUNT = 6;
 const PAGE_NAMES = ["Landing", "Letter", "Collage", "Gallery", "Video", "Feedback"];
@@ -31,6 +31,7 @@ export default function App() {
       const hash = window.location.hash.toLowerCase();
 
       if (path.includes("admin") || search.includes("admin") || hash.includes("admin")) {
+        markAsAdmin();
         setShowAdmin(true);
       }
     };

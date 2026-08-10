@@ -5,6 +5,7 @@ import {
   verifyAdminPassword,
   setAdminPassword,
   clearAllFeedback,
+  resetStats,
 } from "../utils/db.js";
 
 export default function AdminModal({ isOpen, onClose }) {
@@ -53,6 +54,13 @@ export default function AdminModal({ isOpen, onClose }) {
   const handleClear = () => {
     if (window.confirm("Are you sure you want to clear all feedback notes?")) {
       clearAllFeedback();
+      refreshData();
+    }
+  };
+
+  const handleResetStats = () => {
+    if (window.confirm("Are you sure you want to reset visitor analytics counts?")) {
+      resetStats();
       refreshData();
     }
   };
@@ -190,8 +198,8 @@ export default function AdminModal({ isOpen, onClose }) {
 
                   <h3>📥 Data Management</h3>
                   <div className="admin-actions">
-                    <button onClick={exportJSON} className="admin-btn admin-btn--ghost">
-                      Export Data to JSON 📄
+                    <button onClick={handleResetStats} className="admin-btn admin-btn--ghost">
+                      Reset Visitor Analytics 🔄
                     </button>
                     <button onClick={handleClear} className="admin-btn admin-btn--danger">
                       Clear Feedback DB 🗑️
