@@ -3,7 +3,6 @@ import GinghamBackground from "./components/GinghamBackground.jsx";
 import PageDots from "./components/PageDots.jsx";
 import GalleryButton from "./components/GalleryButton.jsx";
 import FeedbackButton from "./components/FeedbackButton.jsx";
-import AdminButton from "./components/AdminButton.jsx";
 import AdminModal from "./components/AdminModal.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import LetterPage from "./pages/LetterPage.jsx";
@@ -26,16 +25,21 @@ export default function App() {
   const [showAdmin, setShowAdmin] = useState(false);
 
   useEffect(() => {
-    // Check if ?admin=true is in URL
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("admin") === "true") {
+    // Access admin page ONLY via URL: /admin or ?admin=true or #admin
+    const path = window.location.pathname.toLowerCase();
+    const search = window.location.search.toLowerCase();
+    const hash = window.location.hash.toLowerCase();
+
+    if (path.includes("admin") || search.includes("admin") || hash.includes("admin")) {
       setShowAdmin(true);
     }
   }, []);
 
   useEffect(() => {
-    trackPageView(PAGE_NAMES[pageIndex] || "Page_" + pageIndex);
-  }, [pageIndex]);
+    if (!showAdmin) {
+      trackPageView(PAGE_NAMES[pageIndex] || "Page_" + pageIndex);
+    }
+  }, [pageIndex, showAdmin]);
 
   const goTo = (i) => setPageIndex(i);
   const next = () => setPageIndex((i) => Math.min(i + 1, PAGE_COUNT - 1));
@@ -67,9 +71,18 @@ export default function App() {
       )}
       {showChrome && <PageDots count={PAGE_COUNT} activeIndex={pageIndex} onSelect={goTo} />}
 
-      <AdminButton onClick={() => setShowAdmin(true)} />
-
-      <AdminModal isOpen={showAdmin} onClose={() => setShowAdmin(false)} />
+      {/* Admin Portal rendered ONLY when accessing via URL (/admin, ?admin=true, #admin) */}
+      <AdminModal
+        isOpen={showAdmin}
+        onClose={() => {
+          setShowAdmin(false);
+          // Clean up URL parameter if desired
+          if (window.history.pushState) {
+            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            window.history.pushState({ path: cleanUrl }, "", cleanUrl);
+          }
+        }}
+      />
     </div>
   );
 }
