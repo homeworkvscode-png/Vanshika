@@ -4,6 +4,7 @@ import PageDots from "./components/PageDots.jsx";
 import GalleryButton from "./components/GalleryButton.jsx";
 import FeedbackButton from "./components/FeedbackButton.jsx";
 import AdminModal from "./components/AdminModal.jsx";
+import TimerPage from "./pages/TimerPage.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import LetterPage from "./pages/LetterPage.jsx";
 import CollagePage from "./pages/CollagePage.jsx";
@@ -12,15 +13,15 @@ import VideoPage from "./pages/VideoPage.jsx";
 import FeedbackPage from "./pages/FeedbackPage.jsx";
 import { trackPageView, markAsAdmin } from "./utils/db.js";
 
-const PAGE_COUNT = 6;
-const PAGE_NAMES = ["Landing", "Letter", "Collage", "Gallery", "Video", "Feedback"];
-const LANDING_INDEX = 0;
-const GALLERY_INDEX = 3;
-const VIDEO_INDEX = 4;
-const FEEDBACK_INDEX = 5;
+const PAGE_COUNT = 7;
+const PAGE_NAMES = ["Timer", "Landing", "Letter", "Collage", "Gallery", "Video", "Feedback"];
+const TIMER_INDEX = 0;
+const GALLERY_INDEX = 4;
+const VIDEO_INDEX = 5;
+const FEEDBACK_INDEX = 6;
 
 export default function App() {
-  const [pageIndex, setPageIndex] = useState(LANDING_INDEX);
+  const [pageIndex, setPageIndex] = useState(TIMER_INDEX);
   const [cinematic, setCinematic] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
 
@@ -54,9 +55,9 @@ export default function App() {
 
   const goTo = (i) => setPageIndex(i);
   const next = () => setPageIndex((i) => Math.min(i + 1, PAGE_COUNT - 1));
-  const replay = () => setPageIndex(LANDING_INDEX);
+  const replay = () => setPageIndex(TIMER_INDEX);
 
-  const showChrome = !cinematic && pageIndex !== LANDING_INDEX;
+  const showChrome = !cinematic && pageIndex !== TIMER_INDEX;
 
   return (
     <div className={cinematic ? "app app--cinematic" : "app"}>
@@ -66,9 +67,10 @@ export default function App() {
         className={`page-frame${pageIndex === GALLERY_INDEX ? " page-frame--wide" : ""}`}
         key={pageIndex}
       >
-        {pageIndex === LANDING_INDEX && <LandingPage onNext={next} />}
-        {pageIndex === 1 && <LetterPage onNext={next} />}
-        {pageIndex === 2 && <CollagePage onNext={next} />}
+        {pageIndex === TIMER_INDEX && <TimerPage onNext={next} />}
+        {pageIndex === 1 && <LandingPage onNext={next} />}
+        {pageIndex === 2 && <LetterPage onNext={next} />}
+        {pageIndex === 3 && <CollagePage onNext={next} />}
         {pageIndex === GALLERY_INDEX && <GalleryPage onNext={next} />}
         {pageIndex === VIDEO_INDEX && <VideoPage onNext={next} onCinematicChange={setCinematic} />}
         {pageIndex === FEEDBACK_INDEX && <FeedbackPage onReplay={replay} />}
